@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import yfinance as yf
 
+from dafin.plot import Plot
+
 
 class Returns:
     def __init__(
@@ -70,6 +72,9 @@ class Returns:
         self.__mean_sd["mean"] = self.__returns.mean()
         self.__mean_sd["sd"] = self.__returns.std()
 
+        # plot
+        self.plot = Plot()
+
     def collect(self):
 
         self.path_data.mkdir(parents=True, exist_ok=True)
@@ -86,11 +91,11 @@ class Returns:
             raw_df = yf.Tickers(self.asset_list).history(period="max")
 
             # data refinement
-            raw_df.dropna(inplace=True)
+            raw_df = raw_df.dropna(inplace=False)
             col_names = [(self.col_price, ticker) for ticker in self.asset_list]
             price_df = raw_df[col_names]
             price_df.columns = [col[1] for col in price_df.columns.values]
-            price_df.dropna(inplace=True)
+            price_df = price_df.dropna(inplace=False)
 
             # data storage
             filename = self.path_data / Path(f"price_{self.signature}.pkl")
@@ -126,3 +131,84 @@ class Returns:
             + f"Cumulative Returns:\n{self.cum_returns}\n\n"
             + f"Mean-SD Returns:\n{self.mean_sd}\n"
         )
+
+    def plot_prices(self):
+        fig, ax = self.plot.plot_trend(
+            df=self.prices,
+            title="",
+            xlabel="Date",
+            ylabel="Price (US$)",
+        )
+        return fig, ax
+
+    def plot_returns(self, alpha=1):
+        fig, ax = self.plot.plot_trend(
+            df=self.returns,
+            title="",
+            xlabel="Date",
+            ylabel="Daily Returns",
+            alpha=alpha,
+        )
+        return fig, ax
+
+    def plot_cum_returns(self):
+        fig, ax = self.plot.plot_trend(
+            df=self.cum_returns,
+            title="",
+            xlabel="Date",
+            ylabel="Cumulative Returns",
+        )
+        return fig, ax
+
+    def plot_dist_returns(self):
+        fig, ax = self.plot.plot_box(
+            df=self.returns,
+            title=f"",
+            xlabel="Assets",
+            ylabel=f"Returns",
+            figsize=(15, 8),
+            yscale="symlog",
+        )
+        return fig, ax
+
+    def plot_corr(self):
+        fig, ax = self.plot.plot_heatmap(
+            df=self.returns,
+            relation_type="corr",
+            title="",
+            annotate=True,
+        )
+        return fig, ax
+
+    def plot_cov(self):
+        fig, ax = self.plot.plot_heatmap(
+            df=self.returns,
+            relation_type="cov",
+            title="",
+            annotate=True,
+        )
+        return fig, ax
+
+    def plot_mean_sd(
+        self,
+        annualized=True,
+        colour="tab:blue",
+        fig=None,
+        ax=None,
+    ):
+        ms = self.mean_sd.copy()
+
+        if annualized:
+            ms["mean"] *= 252
+            ms["sd"] *= np.sqrt(252)
+
+        fig, ax = self.plot.plot_scatter(
+            df=ms,
+            title="",
+            xlabel="Volatility (SD)",
+            ylabel="Expected Returns",
+            colour=colour,
+            fig=fig,
+            ax=ax,
+        )
+        return fig, ax
