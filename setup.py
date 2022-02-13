@@ -19,9 +19,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "numpy>=1.22.0",
-        "pandas>=1.3.5",
+        "seaborn>=0.11.2",
         "yfinance>=0.1.68",
     ],
+    tests_require=["pytest"],
     python_requires=">=3.8",
 )
