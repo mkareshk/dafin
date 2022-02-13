@@ -1,75 +1,111 @@
 # dafin
 
-# Install
+# dafin
+
+dafin is an open-source Python package to collect, store and visualize financial data regardless of the data source. It provides an easy-to-use set of APIs to access the data as Pandas dataframes and visualize them using standard matplotlib methods. The current version of dafin uses [yfinance](https://github.com/ranaroussi/yfinance), but in case of any changes in the APIs of yfinance or Yahoo Finance, dafin still remains backward compatible.
+
+## Financial data
+
+Here are different types of financial data that dafin collects and visualizes:
+
+1. `Returns`: The data of asset prices and returns. This includes raw daily prices, daily returns, cumulative returns, and correlations and covariance matrix of the returns.
+2. `Fundamental`: The fundamental data of assets including financial reports. 
+
+# install
+
+dafin is available on [PyPI](https://pypi.org/), so you can install it by running the following command:
 
 ```bash
 pip install dafin
 ```
 
-# Returns Data
+Note that dafin needs python>=3.8 and it is tested on Ubuntu 20.04.
 
-Create a `Returns` object:
+# Usage
+
+## Asset Returns
+
+The `Returns` class provides the returns data. Let's first create a `Returns` object. In our illustrative example, we aim to collect the _close_ returns data of Apple (_AAPL_) and Google (_GOOGL_) between _2015/01/01_ and _2020/12/31_. 
 
 ```python
 from dafin import Returns
 
-returns_data = Returns(asset_list=["AAPL", "GOOGL"])
+returns_data = Returns(
+    asset_list=["AAPL", "GOOGL"],
+    date_start="2015-01-01",
+    date_end="2020-12-31",
+    col_price="Close",
+)
 ```
 
 Here is the available data:
 
-- Asset List
+- List of assets. (`list`)
+
     ```python
     returns_data.asset_list
     ```
+
     ```bash
     ['AAPL', 'GOOGL']
     ```
 
-- Price Column
+- The price column. (`str`)
+
     ```python
     returns_data.col_price
     ```
+
     ```bash
     'Close'
     ```
 
-- Start Date
+- The starting date. (`str`)
+
     ```python
     returns_data.date_start_str
     ```
+
     ```bash
     '2000-01-01'
     ```
 
-- End Date
+- The ending data. (`str`)
+
     ```python
     returns_data.date_end_str
     ```
+
     ```bash
     '2020-12-31'
     ```
 
-- Business Days No.
+- The number of business days. (`int`)
+
     ```python
     returns_data.business_day_num
     ```
+
     ```bash
     5478
     ```
 
-- Signature
+- The data signature that can be used as a unique identifier. (`str`)
+
     ```python
     returns_data.signature
     ```
+
     ```bash
     'cfdd9b6cc8'
     ```
 
-- Prices
+- Asset prices. (`pandas.DataFrame`)
+
     ```python
     returns_data.prices
     ```
+
     ```bash
                     AAPL        GOOGL
     Date                               
@@ -88,10 +124,12 @@ Here is the available data:
     [4374 rows x 2 columns]
     ```
 
-- Returns
+- Asset returns. (`pandas.DataFrame`)
+
     ```python
     returns_data.returns
     ```
+
     ```bash
                     AAPL     GOOGL
     Date                          
@@ -110,10 +148,12 @@ Here is the available data:
     [4373 rows x 2 columns]
     ```
 
-- Cumulative Returns
+- Cumulative asset returns. (`pandas.DataFrame`)
+
     ```python
     returns_data.cum_returns
     ```
+
     ```bash
                     AAPL      GOOGL
     Date                             
@@ -132,12 +172,16 @@ Here is the available data:
     [4373 rows x 2 columns]
     ```
 
-- Mean-SD Returns
+- Mean-SD of returns.  (`pandas.DataFrame`)
+
     ```python
     returns_data.mean_sd
     ```
+    
     ```bash
             mean        sd
     AAPL   0.001576  0.020908
     GOOGL  0.001107  0.019029
     ```
+
+
