@@ -42,10 +42,10 @@ class Returns:
             self.date_end = datetime.datetime.strptime(date_end, fmt).date()
 
         elif isinstance(date_start, datetime.date):
-            self.date_start = date_start.strftime(fmt)
-            self.date_end = date_start.strftime(fmt)
-            self.date_start_str = date_start
-            self.date_end_str = date_end
+            self.date_start = date_start
+            self.date_end = date_end
+            self.date_start_str = date_start.strftime(fmt)
+            self.date_end_str = date_end.strftime(fmt)
 
         else:
             raise ValueError(
@@ -62,6 +62,7 @@ class Returns:
         self.collect()
         if self.__data_prices is None:
             raise ValueError("Error in data collection, self.__data_prices is not set")
+        self.__data_prices = self.__data_prices.loc[self.date_start : self.date_end]
 
         # calculate returns
         self.__returns = self.__data_prices.pct_change().dropna()
