@@ -8,6 +8,7 @@ import pandas as pd
 import yfinance as yf
 
 from dafin.plot import Plot
+from dafin.performance import AssetPerformance
 
 
 class Returns:
@@ -17,13 +18,15 @@ class Returns:
         date_start: str = "2000-01-01",
         date_end: str = "2020-12-31",
         col_price: str = "Close",
-        path_data: Path = Path("data_returns"),
+        cache=True,
+        cache_path: Path = Path("cache_dafin"),
     ) -> None:
 
         # arguments
         self.asset_list = asset_list
         self.col_price = col_price
-        self.path_data = path_data
+        self.cache = cache
+        self.cache_path = cache_path
 
         # make the dates standard
 
@@ -55,38 +58,40 @@ class Returns:
 
         # derived parameters
         self.business_day_num = int(np.busday_count(date_start, date_end))
-        self.name = ".".join([self.date_start_str, self.date_end_str] + asset_list)
+        footprint = (
+            [self.date_start_str, self.date_end_str] + asset_list + ["col_price"]
+        )
+        self.name = ".".join(footprint)
         self.signature = hashlib.md5(self.name.encode("utf-8")).hexdigest()[0:10]
 
         # retrieve the data
         self.collect()
+
         if self.__data_prices is None:
             raise ValueError("Error in data collection, self.__data_prices is not set")
+
         self.__data_prices = self.__data_prices.loc[self.date_start : self.date_end]
-
-        # calculate returns
         self.__returns = self.__data_prices.pct_change().dropna()
-        self.__cum_returns = (self.__returns + 1).cumprod() - 1
 
-        # mean-sd
-        self.__mean_sd = pd.DataFrame(columns=["mean", "sd"])
-        self.__mean_sd["mean"] = self.__returns.mean()
-        self.__mean_sd["sd"] = self.__returns.std()
+        # performance
+        self.__performance = AssetPerformance(self.__returns)
+        self.returns = self.__performance.returns
+        self.cum_returns = self.__performance.cum_returns
+        self.total_returns = self.__performance.total_returns
+        self.mean_sd = self.__performance.mean_sd
 
         # plot
         self.plot = Plot()
 
     def collect(self):
 
-        self.path_data.mkdir(parents=True, exist_ok=True)
-        price_file = glob.glob(
-            str(self.path_data / Path(f"price_{self.signature}.pkl"))
-        )
+        filename = self.cache_path / Path(f"price_{self.signature}.pkl")
+        price_file = glob.glob(str(filename))
 
-        if price_file:  # read the existing data
+        if self.cache and price_file:
             self.__data_prices = pd.read_pickle(price_file[0])
 
-        else:  # data collection using API
+        else:
 
             # data retrieval
             raw_df = yf.Tickers(self.asset_list).history(period="max")
@@ -99,25 +104,13 @@ class Returns:
             price_df = price_df.dropna(inplace=False)
 
             # data storage
-            filename = self.path_data / Path(f"price_{self.signature}.pkl")
+            self.cache_path.mkdir(parents=True, exist_ok=True)
             price_df.to_pickle(filename)
             self.__data_prices = price_df
 
     @property
     def prices(self):
         return self.__data_prices
-
-    @property
-    def returns(self):
-        return self.__returns
-
-    @property
-    def cum_returns(self):
-        return self.__cum_returns
-
-    @property
-    def mean_sd(self):
-        return self.__mean_sd
 
     def __str__(self):
         return (
