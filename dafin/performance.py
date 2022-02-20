@@ -1,6 +1,8 @@
 import numpy as np
 import pandas as pd
 
+from dafin.utils import annualize_returns, annualize_sd, get_days_per_year
+
 
 class AssetPerformance:
     def __init__(self, returns) -> None:
@@ -20,16 +22,20 @@ class AssetPerformance:
         self.__mean_sd["sd"] = self.__returns.std()
 
         # annualized
-        date_start = self.__returns.index[0].date()
-        date_end = self.__returns.index[-1].date()
-        date_diff = date_end - date_start
-
-        busday_num = np.busday_count(date_start, date_end)
-        days_num = int(365.25 * (busday_num / date_diff.days))
+        days_per_year = get_days_per_year(
+            date_start=self.__returns.index[0].date(),
+            date_end=self.__returns.index[-1].date(),
+        )
 
         self.__annualized_mean_sd = pd.DataFrame(columns=["mean", "sd"])
-        self.__annualized_mean_sd["mean"] = (1 + self.__returns.mean()) ** days_num - 1
-        self.__annualized_mean_sd["sd"] = self.__returns.std() * np.sqrt(days_num)
+        self.__annualized_mean_sd["mean"] = annualize_returns(
+            returns=self.__returns, days_per_year=days_per_year
+        )
+        self.__annualized_mean_sd["sd"] = annualize_sd(
+            returns=self.__returns, days_per_year=days_per_year
+        )
+
+        self.__days_per_year = days_per_year
 
     @property
     def returns(self):
@@ -50,3 +56,7 @@ class AssetPerformance:
     @property
     def annualized_mean_sd(self):
         return self.__annualized_mean_sd
+
+    @property
+    def days_per_year(self):
+        return self.__days_per_year
