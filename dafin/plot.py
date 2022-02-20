@@ -10,6 +10,8 @@ sns.set_style("whitegrid")
 
 # general configuration for matplotlib
 DEFAULT_SIZE = (15, 8)
+DEFAULT_SIZE_SQUARE = (15, 15)
+
 params = {
     "font.family": "serif",
     "legend.fontsize": "large",
@@ -184,14 +186,17 @@ class Plot:
         title="",
         xlabel="",
         ylabel="",
-        figsize=DEFAULT_SIZE,
+        figsize=DEFAULT_SIZE_SQUARE,
         colour="tab:blue",
         fig=None,
         ax=None,
     ):
         if not ax:
             fig, ax = plt.subplots(figsize=figsize)
+        from matplotlib.ticker import FormatStrFormatter
 
+        ax.xaxis.set_major_formatter(FormatStrFormatter("%.1f"))
+        ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
         df.plot.scatter(x="sd", y="mean", c=colour, ax=ax, s=200, alpha=1.0)
 
         x_min, x_max = df["sd"].min(), df["sd"].max()
@@ -212,8 +217,13 @@ class Plot:
         ax.set_ylabel(ylabel)
         ax.set_title(title)
 
-        ax.set_xlim(left=x_min - 0.2 * x_diff, right=x_max + 0.2 * x_diff)
-        ax.set_ylim(bottom=y_min - 0.2 * y_diff, top=y_max + 0.2 * y_diff)
+        axis_max = max(x_max + 0.2 * x_diff, y_max + 0.2 * y_diff)
+        x_min = 0.0
+        y_min = min(0.0, y_min - 0.2 * y_diff)
+
+        ax.set_xlim(left=x_min, right=axis_max)
+        ax.set_ylim(bottom=y_min, top=axis_max)
+
         fig.tight_layout()
 
         return fig, ax
