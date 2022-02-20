@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 
 
@@ -18,6 +19,18 @@ class AssetPerformance:
         self.__mean_sd["mean"] = self.__returns.mean()
         self.__mean_sd["sd"] = self.__returns.std()
 
+        # annualized
+        date_start = self.__returns.index[0].date()
+        date_end = self.__returns.index[-1].date()
+        date_diff = date_end - date_start
+
+        busday_num = np.busday_count(date_start, date_end)
+        days_num = int(365.25 * (busday_num / date_diff.days))
+
+        self.__annualized_mean_sd = pd.DataFrame(columns=["mean", "sd"])
+        self.__annualized_mean_sd["mean"] = (1 + self.__returns.mean()) ** days_num - 1
+        self.__annualized_mean_sd["sd"] = self.__returns.std() * np.sqrt(days_num)
+
     @property
     def returns(self):
         return self.__returns
@@ -33,3 +46,7 @@ class AssetPerformance:
     @property
     def mean_sd(self):
         return self.__mean_sd
+
+    @property
+    def annualized_mean_sd(self):
+        return self.__annualized_mean_sd

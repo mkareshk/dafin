@@ -29,7 +29,6 @@ class Returns:
         self.cache_path = cache_path
 
         # make the dates standard
-
         fmt = "%Y-%m-%d"
 
         if type(date_start) != type(date_end):
@@ -79,6 +78,7 @@ class Returns:
         self.cum_returns = self.__performance.cum_returns
         self.total_returns = self.__performance.total_returns
         self.mean_sd = self.__performance.mean_sd
+        self.annualized_mean_sd = self.__performance.annualized_mean_sd
 
         # plot
         self.plot = Plot()
@@ -131,7 +131,7 @@ class Returns:
             df=self.prices,
             title="",
             xlabel="Date",
-            ylabel="Price (US$)",
+            ylabel="Asset Prices",
         )
         return fig, ax
 
@@ -159,7 +159,7 @@ class Returns:
             df=self.returns,
             title=f"",
             xlabel="Assets",
-            ylabel=f"Returns",
+            ylabel=f"Daily Returns",
             figsize=(15, 8),
             yscale="symlog",
         )
@@ -190,17 +190,21 @@ class Returns:
         fig=None,
         ax=None,
     ):
-        ms = self.mean_sd.copy()
 
         if annualized:
-            ms["mean"] *= 252
-            ms["sd"] *= np.sqrt(252)
+            ms = self.annualized_mean_sd * 100.00
+            xlabel = "Annualized Standard Deviation (%)"
+            ylabel = "Annualized Expected Returns (%)"
+        else:
+            ms = self.mean_sd
+            xlabel = "Standard Deviation"
+            ylabel = "Expected Returns"
 
         fig, ax = self.plot.plot_scatter(
             df=ms,
             title="",
-            xlabel="Volatility (SD)",
-            ylabel="Expected Returns",
+            xlabel=xlabel,
+            ylabel=ylabel,
             colour=colour,
             fig=fig,
             ax=ax,
