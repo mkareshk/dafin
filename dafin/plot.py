@@ -4,6 +4,7 @@ import numpy as np
 import seaborn as sns
 import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
+from matplotlib.ticker import FormatStrFormatter
 
 sns.set()
 sns.set_style("whitegrid")
@@ -148,7 +149,6 @@ class Plot:
         )
         if legend:
             current_handles, current_labels = plt.gca().get_legend_handles_labels()
-            # plt.xticks(rotation=45)
             plt.legend(
                 current_handles,
                 current_labels,
@@ -193,10 +193,10 @@ class Plot:
     ):
         if not ax:
             fig, ax = plt.subplots(figsize=figsize)
-        from matplotlib.ticker import FormatStrFormatter
 
         ax.xaxis.set_major_formatter(FormatStrFormatter("%.1f"))
         ax.yaxis.set_major_formatter(FormatStrFormatter("%.1f"))
+
         df.plot.scatter(x="sd", y="mean", c=colour, ax=ax, s=200, alpha=1.0)
 
         x_min, x_max = df["sd"].min(), df["sd"].max()
