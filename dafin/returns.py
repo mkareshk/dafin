@@ -40,10 +40,10 @@ class Returns:
         elif isinstance(date_start, str):
             self.date_start_str = date_start
             self.date_end_str = date_end
-            self.date_start = datetime.datetime.strptime(date_start, fmt).date()
-            self.date_end = datetime.datetime.strptime(date_end, fmt).date()
+            self.date_start = datetime.datetime.strptime(date_start, fmt)
+            self.date_end = datetime.datetime.strptime(date_end, fmt)
 
-        elif isinstance(date_start, datetime.date):
+        elif isinstance(date_start, datetime):
             self.date_start = date_start
             self.date_end = date_end
             self.date_start_str = date_start.strftime(fmt)
@@ -79,6 +79,7 @@ class Returns:
         self.total_returns = self.__performance.total_returns
         self.mean_sd = self.__performance.mean_sd
         self.annualized_mean_sd = self.__performance.annualized_mean_sd
+        self.days_per_year = self.__performance.days_per_year
 
         # plot
         self.plot = Plot()
