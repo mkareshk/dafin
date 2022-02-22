@@ -43,7 +43,7 @@ class Returns:
             self.date_start = datetime.datetime.strptime(date_start, fmt)
             self.date_end = datetime.datetime.strptime(date_end, fmt)
 
-        elif isinstance(date_start, datetime):
+        elif isinstance(date_start, datetime.date):
             self.date_start = date_start
             self.date_end = date_end
             self.date_start_str = date_start.strftime(fmt)
@@ -52,7 +52,7 @@ class Returns:
         else:
             raise ValueError(
                 "date_start and date_end types should be either datetime.date "
-                "or str (e.g. '2014-03-24')"
+                f"or str (e.g. '2014-03-24'). {type(date_start)} is given"
             )
 
         # derived parameters
