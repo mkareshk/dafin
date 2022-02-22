@@ -10,3 +10,10 @@ test:
 		&& pytest
 	@rm dafin-*.whl
 	@rm -rf venv_test
+
+test_cov:
+	pytest --cov-report term-missing --cov=dafin tests/
+
+test_cov_docker:
+	docker build -t dafin:test -f Dockerfile.test .
+	dokcer run  dafin:test
