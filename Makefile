@@ -16,4 +16,4 @@ test_cov:
 
 test_cov_docker:
 	docker build -t dafin:test -f Dockerfile.test .
-	dokcer run  dafin:test
+	docker run  dafin:test
