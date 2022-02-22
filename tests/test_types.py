@@ -5,8 +5,10 @@ import pandas as pd
 
 from dafin import Returns
 
-asset_list = ["AAPL", "GOOGL"]
-returns_data = Returns(asset_list=asset_list)
+from .utils import check_figure, ASSET_LIST
+
+
+returns_data = Returns(asset_list=ASSET_LIST)
 
 
 def test_type_asset_list():
@@ -67,3 +69,58 @@ def test_type_annualized_mean_sd():
 
 def test_type_days_per_year():
     assert isinstance(returns_data.days_per_year, int)
+
+
+def test_type_plot_prices():
+    fig, ax = returns_data.plot_prices()
+    check_figure(fig, ax)
+
+
+def test_type_plot_returns():
+    fig, ax = returns_data.plot_returns()
+    check_figure(fig, ax)
+
+
+def test_type_plot_cum_returns():
+    fig, ax = returns_data.plot_cum_returns()
+    check_figure(fig, ax)
+
+
+def test_type_plot_dist_returns():
+    fig, ax = returns_data.plot_dist_returns()
+    check_figure(fig, ax)
+
+
+def test_type_plot_corr():
+    fig, ax = returns_data.plot_corr()
+    check_figure(fig, ax)
+
+
+def test_type_plot_cov():
+    fig, ax = returns_data.plot_cov()
+    check_figure(fig, ax)
+
+
+def test_type_plot_cov():
+    fig, ax = returns_data.plot_cov()
+    check_figure(fig, ax)
+
+
+def test_type_plot_cov():
+    fig, ax = returns_data.plot_cov()
+    check_figure(fig, ax)
+
+
+def test_type_plot_cov():
+    fig, ax = returns_data.plot_cov()
+    check_figure(fig, ax)
+
+
+def test_type_plot_mean_sd():
+    fig, ax = returns_data.plot_mean_sd(annualized=True)
+    check_figure(fig, ax)
+
+
+def test_type_plot_mean_sd():
+    fig, ax = returns_data.plot_mean_sd(annualized=False)
+    check_figure(fig, ax)
