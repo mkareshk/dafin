@@ -1,8 +1,9 @@
 import glob
 import datetime
+import json
 import hashlib
 from pathlib import Path
-
+from functools import reduce
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -19,14 +20,17 @@ class Returns:
         date_end: str = "2020-12-31",
         col_price: str = "Close",
         cache=True,
-        cache_path: Path = Path("cache_dafin"),
+        path_cache: Path = Path("cache_dafin"),
     ) -> None:
 
         # arguments
         self.asset_list = asset_list
         self.col_price = col_price
         self.cache = cache
-        self.cache_path = cache_path
+        self.path_cache = path_cache
+
+        self.path_price = self.path_cache / Path("returns")
+        self.path_price.mkdir(parents=True, exist_ok=True)
 
         # make the dates standard
         fmt = "%Y-%m-%d"
@@ -64,7 +68,7 @@ class Returns:
         self.signature = hashlib.md5(self.name.encode("utf-8")).hexdigest()[0:10]
 
         # retrieve the data
-        self.collect()
+        self.__data_prices = self.get_price_df()
 
         if self.__data_prices is None:
             raise ValueError("Error in data collection, self.__data_prices is not set")
@@ -84,30 +88,39 @@ class Returns:
         # plot
         self.plot = Plot()
 
-    def collect(self):
+    def get_price_df(self):
 
-        filename = self.cache_path / Path(f"price_{self.signature}.pkl")
-        price_file = glob.glob(str(filename))
+        prices_list = []
+        for ticker in self.asset_list:
+            path_asset = self.path_price / Path(f"{ticker}.json")
 
-        if self.cache and price_file:
-            self.__data_prices = pd.read_pickle(price_file[0])
+            # retrieve price data if it have not retrieved yet in the cache
+            if not path_asset.is_file():
+                price_df = self.retrieve_price_external_api(ticker)
 
-        else:
+                price_str = json.dumps(price_df.to_json())
+                with open(path_asset, "wt") as fout:
+                    fout.write(price_str)
 
-            # data retrieval
-            raw_df = yf.Tickers(self.asset_list).history(period="max")
+            # data already exists
+            else:
+                with open(path_asset, "rt") as fin:
+                    price_str = fin.read()
+                    price_df = pd.read_json(json.loads(price_str))
 
-            # data refinement
-            raw_df = raw_df.dropna(inplace=False)
-            col_names = [(self.col_price, ticker) for ticker in self.asset_list]
-            price_df = raw_df[col_names]
-            price_df.columns = [col[1] for col in price_df.columns.values]
-            price_df = price_df.dropna(inplace=False)
+            if not price_df.empty:
+                price_df = price_df.rename(
+                    columns={self.col_price: ticker}, inplace=False
+                )[ticker].to_frame()
+                price_df.index.rename("Date", inplace=True)
+                prices_list.append(price_df)
 
-            # data storage
-            self.cache_path.mkdir(parents=True, exist_ok=True)
-            price_df.to_pickle(filename)
-            self.__data_prices = price_df
+        merge_func = lambda df1, df2: pd.merge(df1, df2, on="Date", how="inner")
+
+        return reduce(merge_func, prices_list)
+
+    def retrieve_price_external_api(self, ticker):
+        return yf.Ticker(ticker).history(period="max")
 
     @property
     def prices(self):
