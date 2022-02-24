@@ -31,24 +31,6 @@ class Plot:
         # log
         self.logger = logging.getLogger(__name__)
 
-    def plot_violin(
-        self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, yscale="symlog"
-    ):
-        fig, ax = plt.subplots(figsize=figsize)
-        ax.violinplot(dataset=df, showmeans=True, points=10000)
-        locs, labels = plt.xticks()
-        plt.xticks(locs, [""] + list(df.columns) + [""], rotation=45)
-        plt.grid(True, axis="y")
-        plt.grid(False, axis="x")
-        if yscale == "linear":
-            ax.set_yscale(yscale)
-        else:
-            plt.yscale("symlog", linthresh=0.001)
-        ax.set_xlabel(xlabel)
-        fig.tight_layout()
-
-        return fig, ax
-
     def plot_box(
         self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, yscale="symlog"
     ):
@@ -68,8 +50,6 @@ class Plot:
         if yscale == "linear":
             ax.set_yscale(yscale)
         else:
-            t = np.fabs(df.to_numpy())
-            t = t[t > 0]
             ax.set_yscale(yscale, linthresh=0.001)
 
         ax.set_xlabel(xlabel)
@@ -224,74 +204,6 @@ class Plot:
         ax.set_xlim(left=x_min, right=axis_max)
         ax.set_ylim(bottom=y_min, top=axis_max)
 
-        fig.tight_layout()
-
-        return fig, ax
-
-    def plot_scatter_portfolio(
-        self,
-        df_1,
-        df_2,
-        title="",
-        xlabel="",
-        ylabel="",
-        figsize=DEFAULT_SIZE,
-        colours=["tab:blue", "tab:red"],
-    ):
-        fig, ax = plt.subplots(figsize=figsize)
-
-        df_1.plot.scatter(x="sd", y="mean", c=colours[0], ax=ax, s=200, alpha=1.0)
-        df_2.plot.scatter(x="sd", y="mean", c=colours[1], ax=ax, s=200, alpha=1.0)
-
-        x_min, x_max = df_1["sd"].min(), df_1["sd"].max()
-        x_diff = x_max - x_min
-        y_min, y_max = df_1["mean"].min(), df_1["mean"].max()
-        y_diff = y_max - y_min
-
-        for i, point in df_1.iterrows():
-            ax.text(
-                point["sd"] - x_diff * 0.03,
-                point["mean"] + y_diff * 0.03,
-                i,
-                fontsize=14,
-            )
-        for i, point in df_2.iterrows():
-            ax.text(
-                point["sd"] - x_diff * 0.03,
-                point["mean"] + y_diff * 0.03,
-                i,
-                fontsize=14,
-            )
-        plt.grid(True, axis="y")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
-
-        ax.set_xlim(left=x_min - 0.2 * x_diff, right=x_max + 0.2 * x_diff)
-        ax.set_ylim(bottom=y_min - 0.2 * y_diff, top=y_max + 0.2 * y_diff)
-        fig.tight_layout()
-
-        return fig, ax
-
-    def plot_scatter_seaborn(
-        self, data, x, y, hue, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE
-    ):
-
-        fig, ax = plt.subplots(figsize=figsize)
-        sns.scatterplot(data=data, x=x, y=y, hue=hue, ax=ax, s=200, alpha=0.5)
-
-        x_min, x_max = data["sd"].min(), data["sd"].max()
-        x_diff = x_max - x_min
-        y_min, y_max = data["mean"].min(), data["mean"].max()
-        y_diff = y_max - y_min
-
-        plt.grid(True, axis="y")
-        ax.set_xlabel(xlabel)
-        ax.set_ylabel(ylabel)
-        ax.set_title(title)
-
-        ax.set_xlim(left=x_min - 0.2 * x_diff, right=x_max + 0.2 * x_diff)
-        ax.set_ylim(bottom=y_min - 0.2 * y_diff, top=y_max + 0.2 * y_diff)
         fig.tight_layout()
 
         return fig, ax
