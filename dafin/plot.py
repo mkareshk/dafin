@@ -144,7 +144,14 @@ class Plot:
         return fig, ax
 
     def plot_bar(
-        self, df, yscale="linear", title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE
+        self,
+        df,
+        yscale="linear",
+        title="",
+        xlabel="",
+        ylabel="",
+        legend=False,
+        figsize=DEFAULT_SIZE,
     ):
         fig, ax = plt.subplots(figsize=figsize)
         df.plot.bar(ax=ax, legend=False)
@@ -155,7 +162,8 @@ class Plot:
         ax.set_xlabel(xlabel)
         ax.set_ylabel(ylabel)
         ax.set_title(title)
-        plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
+        if legend:
+            plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
         fig.tight_layout()
 
         return fig, ax

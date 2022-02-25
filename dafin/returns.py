@@ -88,6 +88,11 @@ class Returns:
         # plot
         self.plot = Plot()
 
+        # stats
+        self.cov = self.returns.cov()
+        self.corr = self.returns.corr()
+        self.stats = self.returns.describe()
+
     def get_price_df(self):
 
         prices_list = []
@@ -165,6 +170,15 @@ class Returns:
             title="",
             xlabel="Date",
             ylabel="Cumulative Returns",
+        )
+        return fig, ax
+
+    def prot_total_returns(self):
+        fig, ax = self.plot.plot_bar(
+            df=self.total_returns,
+            title="",
+            xlabel="Assets",
+            ylabel=f"Total Returns ({self.date_start_str} to {self.date_end_str})",
         )
         return fig, ax
 
