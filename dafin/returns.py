@@ -173,7 +173,7 @@ class Returns:
         )
         return fig, ax
 
-    def prot_total_returns(self):
+    def plot_total_returns(self):
         fig, ax = self.plot.plot_bar(
             df=self.total_returns,
             title="",
