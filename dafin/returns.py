@@ -1,9 +1,11 @@
+import os
 import glob
-import datetime
 import json
 import hashlib
+import datetime
 from pathlib import Path
 from functools import reduce
+
 import numpy as np
 import pandas as pd
 import yfinance as yf
@@ -33,7 +35,7 @@ class Returns:
         self.path_price.mkdir(parents=True, exist_ok=True)
 
         # make the dates standard
-        fmt = "%Y-%m-%d"
+        self.date_fmt = "%Y-%m-%d"
 
         if type(date_start) != type(date_end):
             raise ValueError(
@@ -44,14 +46,14 @@ class Returns:
         elif isinstance(date_start, str):
             self.date_start_str = date_start
             self.date_end_str = date_end
-            self.date_start = datetime.datetime.strptime(date_start, fmt)
-            self.date_end = datetime.datetime.strptime(date_end, fmt)
+            self.date_start = datetime.datetime.strptime(date_start, self.date_fmt)
+            self.date_end = datetime.datetime.strptime(date_end, self.date_fmt)
 
         elif isinstance(date_start, datetime.date):
             self.date_start = date_start
             self.date_end = date_end
-            self.date_start_str = date_start.strftime(fmt)
-            self.date_end_str = date_end.strftime(fmt)
+            self.date_start_str = date_start.strftime(self.date_fmt)
+            self.date_end_str = date_end.strftime(self.date_fmt)
 
         else:
             raise ValueError(
@@ -60,7 +62,9 @@ class Returns:
             )
 
         # derived parameters
-        self.business_day_num = int(np.busday_count(date_start, date_end))
+        self.business_day_num = int(
+            np.busday_count(self.date_start_str, self.date_end_str)
+        )
         footprint = (
             [self.date_start_str, self.date_end_str] + asset_list + ["col_price"]
         )
@@ -95,17 +99,27 @@ class Returns:
 
     def get_price_df(self):
 
+        today_str = datetime.datetime.today().strftime(self.date_fmt)
         prices_list = []
         for ticker in self.asset_list:
-            path_asset = self.path_price / Path(f"{ticker}.json")
+            filename = f"{ticker}_{self.col_price}_{today_str}.json"
+            filename_wo_date = f"{ticker}_{self.col_price}_*.json"
+            path_asset = self.path_price / Path(filename)
 
             # retrieve price data if it have not retrieved yet in the cache
             if not path_asset.is_file():
+
                 price_df = self.retrieve_price_external_api(ticker)
 
                 price_str = json.dumps(price_df.to_json())
                 with open(path_asset, "wt") as fout:
                     fout.write(price_str)
+
+                # remove old cache
+                ticker_files = glob.glob(str(self.path_price / Path(filename_wo_date)))
+                old_files = ticker_files - [str(path_asset)]
+                for f in old_files:
+                    os.remove(f)
 
             # data already exists
             else:
@@ -154,13 +168,14 @@ class Returns:
         )
         return fig, ax
 
-    def plot_returns(self, alpha=1):
+    def plot_returns(self, alpha=1, legend=True):
         fig, ax = self.plot.plot_trend(
             df=self.returns,
             title="",
             xlabel="Date",
             ylabel="Daily Returns",
             alpha=alpha,
+            legend=legend,
         )
         return fig, ax
 
@@ -173,23 +188,24 @@ class Returns:
         )
         return fig, ax
 
-    def plot_total_returns(self):
+    def plot_total_returns(self, legend=True):
         fig, ax = self.plot.plot_bar(
             df=self.total_returns,
             title="",
             xlabel="Assets",
             ylabel=f"Total Returns ({self.date_start_str} to {self.date_end_str})",
+            legend=legend,
         )
         return fig, ax
 
-    def plot_dist_returns(self):
+    def plot_dist_returns(self, yscale="symlog"):
         fig, ax = self.plot.plot_box(
             df=self.returns,
             title=f"",
             xlabel="Assets",
             ylabel=f"Daily Returns",
             figsize=(15, 8),
-            yscale="symlog",
+            yscale=yscale,
         )
         return fig, ax
 
