@@ -22,9 +22,8 @@ setuptools.setup(
         "seaborn>=0.11.2",
         "yfinance>=0.1.68",
     ],
-    tests_require=["pytest"],
     python_requires=">=3.8",
     extras_require={
-        "test": ["pytest", "pytest-cov"],
+        "test": ["pytest", "pytest-cov", "parameterized"],
     },
 )
