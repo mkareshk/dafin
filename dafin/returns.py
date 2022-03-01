@@ -117,7 +117,7 @@ class Returns:
 
                 # remove old cache
                 ticker_files = glob.glob(str(self.path_price / Path(filename_wo_date)))
-                old_files = ticker_files - [str(path_asset)]
+                old_files = set(ticker_files) - set([str(path_asset)])
                 for f in old_files:
                     os.remove(f)
 
