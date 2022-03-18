@@ -106,7 +106,7 @@ class Returns:
             filename_wo_date = f"{ticker}_{self.col_price}_*.json"
             path_asset = self.path_price / Path(filename)
 
-            # retrieve price data if it have not retrieved yet in the cache
+            # retrieve price data if it have not stored in the cache
             if not path_asset.is_file():
 
                 price_df = self.retrieve_price_external_api(ticker)

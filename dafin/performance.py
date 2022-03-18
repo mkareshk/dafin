@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 
 from dafin.utils import annualize_returns, annualize_sd, get_days_per_year
