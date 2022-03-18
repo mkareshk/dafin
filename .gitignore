@@ -131,3 +131,5 @@ dmypy.json
 
 # misc
 data_returns/
+cache_dafin/
+notebooks/cache_dafin/
