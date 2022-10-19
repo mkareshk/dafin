@@ -20,10 +20,17 @@ setuptools.setup(
     ],
     install_requires=[
         "seaborn>=0.11.2",
-        "yfinance>=0.1.68",
+        "yfinance>=0.1.74",
+        "yahoo_fin>=0.8.9.1",
+        "tabulate>=0.8.10",
     ],
-    python_requires=">=3.8",
+    python_requires=">=3.10",
     extras_require={
-        "test": ["pytest", "pytest-cov", "parameterized"],
+        "test": [
+            "pytest",
+            "pytest-cov",
+            "pytest-parametrized",
+            "pylint",
+        ],
     },
 )
