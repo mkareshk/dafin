@@ -23,6 +23,7 @@ setuptools.setup(
         "yfinance>=0.1.74",
         "yahoo_fin>=0.8.9.1",
         "tabulate>=0.8.10",
+        "scipy>=1.9.3",
     ],
     python_requires=">=3.10",
     extras_require={
