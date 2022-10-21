@@ -1,4 +1,4 @@
-name: dafin CI
+name: Build Status
 
 on: [push]
 
