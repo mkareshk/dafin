@@ -4,7 +4,7 @@ from pathlib import Path, PosixPath
 import pandas as pd
 import yfinance as yf
 
-from .utils import check_type, DEFAULT_CACHE_DIR
+from dafin.utils import check_type, DEFAULT_CACHE_DIR
 
 
 class FundamentalData:

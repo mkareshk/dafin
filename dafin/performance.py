@@ -4,8 +4,8 @@ import scipy as sc
 import numpy as np
 import pandas as pd
 
-from .utils import *
-from .plot import Plot
+from dafin.utils import *
+from dafin.plot import Plot
 
 
 class Performance:

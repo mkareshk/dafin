@@ -7,7 +7,7 @@ from pathlib import Path, PosixPath
 import pandas as pd
 import yfinance as yf
 
-from .utils import *
+from dafin.utils import *
 
 
 class ReturnsData:
