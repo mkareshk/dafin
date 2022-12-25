@@ -2,8 +2,6 @@ import datetime
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
-from tabulate import tabulate
 import yahoo_fin.stock_info as si
 
 DEFAULT_DATE_FMT = "%Y-%m-%d"
@@ -91,15 +89,6 @@ def normalize_date(date):
         )
 
     return date, date_str
-
-
-def pretty_table(df: pd.DataFrame):
-    return tabulate(
-        df,
-        headers="keys",
-        tablefmt="fancy_grid",
-        floatfmt=".2f",
-    )
 
 
 def check_type(var, var_name: str, expected_type):

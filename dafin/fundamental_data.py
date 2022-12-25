@@ -16,12 +16,13 @@ class FundamentalData:
         if isinstance(assets, str):
             assets = [assets]
 
+        # check types
+        check_type(assets, "assets", list)
+        check_type(path_cache, "path_cache", PosixPath)
+
+        # args
         self.assets = assets
         self.path_fundamental = path_cache / Path("fundamental")
-
-        # check types
-        check_type(self.assets, "assets", list)
-        check_type(self.path_fundamental, "path_fundamental", PosixPath)
 
         # create the cache directory
         self.path_fundamental.mkdir(parents=True, exist_ok=True)

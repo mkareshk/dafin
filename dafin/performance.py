@@ -177,7 +177,7 @@ class Performance:
             + f"\t- End Date: {self.date_end_str}\n"
             + f"\t- Days Per Year: {self.returns_period}\n"
             # performance
-            + f"\t - Performance Summary:\n{pretty_table(self.summary)}\n\n\n"
+            + f"\t - Performance Summary:\n{self.summary}\n\n\n"
         )
 
     @property

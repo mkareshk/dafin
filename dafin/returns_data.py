@@ -22,14 +22,15 @@ class ReturnsData:
         if isinstance(assets, str):
             assets = [assets]
 
+        # check types
+        check_type(assets, "assets", list)
+        check_type(col_price, "col_price", str)
+        check_type(path_cache, "path_cache", PosixPath)
+
+        # args
         self.assets = assets
         self.col_price = col_price
         self.path_prices = path_cache / Path("prices")
-
-        # check types
-        check_type(self.assets, "assets", list)
-        check_type(self.col_price, "col_price", str)
-        check_type(self.path_prices, "path_prices", PosixPath)
 
         # derived parameters
         attrs = self.assets + [self.col_price]
@@ -58,6 +59,7 @@ class ReturnsData:
         date_start, _ = normalize_date(date_start)
         date_end, _ = normalize_date(date_end)
 
+        # check types
         check_type(date_start, "date_start", datetime.datetime)
         check_type(date_end, "date_end", datetime.datetime)
 
@@ -115,9 +117,9 @@ class ReturnsData:
             # signature
             + f"\t- Data Signature: {self._hash}\n"
             # prices
-            + f"\t - Prices:\n{pretty_table(self.prices)}\n\n\n"
+            + f"\t- Prices:\n{self.prices}\n\n\n"
             # returns
-            + f"\t - Returns:\n{pretty_table(self.returns)}\n\n\n"
+            + f"\t- Returns:\n{self.returns}\n\n\n"
         )
 
     def __hash__(self):
