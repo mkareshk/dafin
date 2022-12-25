@@ -1,187 +1,93 @@
 # dafin
 
-# dafin
 
-dafin is an open-source Python package to collect, store and visualize financial data regardless of the data source. It provides an easy-to-use set of APIs to access the data as Pandas dataframes and visualize them using standard matplotlib methods. The current version of dafin uses [yfinance](https://github.com/ranaroussi/yfinance), but in case of any changes in the APIs of yfinance or Yahoo Finance, dafin still remains backward compatible.
 
-## Financial data
+![Build Status](https://github.com/mkareshk/dafin/actions/workflows/ci.yaml/badge.svg)
 
-Here are different types of financial data that dafin collects and visualizes:
-
-1. `Returns`: The data of asset prices and returns. This includes raw daily prices, daily returns, cumulative returns, and correlations and covariance matrix of the returns.
-2. `Fundamental`: The fundamental data of assets including financial reports. 
+dafin is an open-source Python package to collect, store and visualize financial data. It provides an easy-to-use set of APIs to access the data as Pandas dataframes and visualize them using standard matplotlib methods. 
 
 # install
 
-dafin is available on [PyPI](https://pypi.org/), so you can install it by running the following command:
+dafin is available on [PyPI](https://pypi.org/), and you can install it by running the following command:
 
 ```bash
 pip install dafin
 ```
 
-Note that dafin needs python>=3.8 and it is tested on Ubuntu 20.04.
+Note that dafin needs python>=3.10 and it is tested on Ubuntu 22.04.
 
 # Usage
 
 ## Asset Returns
 
-The `Returns` class provides the returns data. Let's first create a `Returns` object. In our illustrative example, we aim to collect the _close_ returns data of Apple (_AAPL_) and Google (_GOOGL_) between _2015/01/01_ and _2020/12/31_. 
+The `ReturnsData` class provides the returns data. In our illustrative example here, we aim to collect the _Adj Close_ returns data of SPDR S&P 500 ETF Trust (_SPY_), Vanguard Total Bond Market Index Fund (_BND_), and SPDR Gold Shares (_GLD_) between _2010-01-01_ and _2019-12-31_. 
+
 
 ```python
-from dafin import Returns
+from dafin import ReturnsData, Performance
 
-returns_data = Returns(
-    asset_list=["AAPL", "GOOGL"],
-    date_start="2015-01-01",
-    date_end="2020-12-31",
-    col_price="Close",
-)
+# tickers
+assets = ['SPY', 'BND', 'GLD']
+
+# date
+date_start = "2010-01-01"
+date_end = "2019-12-31"
+
+# retrieve asset returns
+returns_data = ReturnsData(assets)
+returns = returns_data.get_returns(date_start, date_end)
+
+print(returns)
 ```
 
-Here is the available data:
+The returns would be:
 
-- List of assets. (`list`)
+```bash
+                                SPY       BND       GLD
+Date                                                   
+2010-01-04 00:00:00-05:00  0.016960  0.001146  0.023204
+2010-01-05 00:00:00-05:00  0.002647  0.002923 -0.000911
+2010-01-06 00:00:00-05:00  0.000704 -0.000381  0.016500
+2010-01-07 00:00:00-05:00  0.004221 -0.000761 -0.006188
+2010-01-08 00:00:00-05:00  0.003328  0.001015  0.004963
+...                             ...       ...       ...
+2019-12-24 00:00:00-05:00  0.000031  0.000955  0.009432
+2019-12-26 00:00:00-05:00  0.005323  0.000955  0.007857
+2019-12-27 00:00:00-05:00 -0.000248  0.001431 -0.000351
+2019-12-30 00:00:00-05:00 -0.005513 -0.000357  0.002108
+2019-12-31 00:00:00-05:00  0.002429 -0.001072  0.001893
 
-    ```python
-    returns_data.asset_list
-    ```
+[2516 rows x 3 columns]
+```
 
-    ```bash
-    ['AAPL', 'GOOGL']
-    ```
-
-- The price column. (`str`)
-
-    ```python
-    returns_data.col_price
-    ```
-
-    ```bash
-    'Close'
-    ```
-
-- The starting date. (`str`)
-
-    ```python
-    returns_data.date_start_str
-    ```
-
-    ```bash
-    '2000-01-01'
-    ```
-
-- The ending data. (`str`)
-
-    ```python
-    returns_data.date_end_str
-    ```
-
-    ```bash
-    '2020-12-31'
-    ```
-
-- The number of business days. (`int`)
-
-    ```python
-    returns_data.business_day_num
-    ```
-
-    ```bash
-    5478
-    ```
-
-- The data signature that can be used as a unique identifier. (`str`)
-
-    ```python
-    returns_data.signature
-    ```
-
-    ```bash
-    'cfdd9b6cc8'
-    ```
-
-- Asset prices. (`pandas.DataFrame`)
-
-    ```python
-    returns_data.prices
-    ```
-
-    ```bash
-                    AAPL        GOOGL
-    Date                               
-    2004-08-19    0.470173    50.220219
-    2004-08-20    0.471551    54.209209
-    2004-08-23    0.475838    54.754753
-    2004-08-24    0.489158    52.487488
-    2004-08-25    0.505999    53.053055
-    ...                ...          ...
-    2021-12-27  180.330002  2958.129883
-    2021-12-28  179.289993  2933.739990
-    2021-12-29  179.380005  2933.100098
-    2021-12-30  178.199997  2924.010010
-    2021-12-31  177.570007  2897.040039
-
-    [4374 rows x 2 columns]
-    ```
-
-- Asset returns. (`pandas.DataFrame`)
-
-    ```python
-    returns_data.returns
-    ```
-
-    ```bash
-                    AAPL     GOOGL
-    Date                          
-    2004-08-20  0.002930  0.079430
-    2004-08-23  0.009091  0.010064
-    2004-08-24  0.027993 -0.041408
-    2004-08-25  0.034429  0.010775
-    2004-08-26  0.048714  0.018019
-    ...              ...       ...
-    2021-12-27  0.022975  0.006738
-    2021-12-28 -0.005767 -0.008245
-    2021-12-29  0.000502 -0.000218
-    2021-12-30 -0.006578 -0.003099
-    2021-12-31 -0.003535 -0.009224
-
-    [4373 rows x 2 columns]
-    ```
-
-- Cumulative asset returns. (`pandas.DataFrame`)
-
-    ```python
-    returns_data.cum_returns
-    ```
-
-    ```bash
-                    AAPL      GOOGL
-    Date                             
-    2004-08-20    0.002930   0.079430
-    2004-08-23    0.012048   0.090293
-    2004-08-24    0.040378   0.045147
-    2004-08-25    0.076197   0.056408
-    2004-08-26    0.128623   0.075444
-    ...                ...        ...
-    2021-12-27  382.539581  57.903166
-    2021-12-28  380.327612  57.417507
-    2021-12-29  380.519056  57.404766
-    2021-12-30  378.009325  57.223761
-    2021-12-31  376.669415  56.686727
-
-    [4373 rows x 2 columns]
-    ```
-
-- Mean-SD of returns.  (`pandas.DataFrame`)
-
-    ```python
-    returns_data.mean_sd
-    ```
-    
-    ```bash
-            mean        sd
-    AAPL   0.001576  0.020908
-    GOOGL  0.001107  0.019029
-    ```
+## Asset Performance
+The `Performance` class provides utilities to calculate the assets' performance.
 
 
+```python
+# risk-free asset returns
+returns_rf = ReturnsData(assets = 'SHY')
+returns_rf = returns_rf.get_returns(date_start, date_end)
+
+# benchmark returns
+returns_benchmark = ReturnsData('IVV')
+returns_benchmark = returns_benchmark.get_returns(date_start, date_end)
+
+# create the performance object
+performance = Performance(returns, returns_rf, returns_benchmark)
+
+
+## Performance summary
+print(performance.summary)
+```
+
+
+Here is the performance summary:
+```bash
+     Total Returns  Expected Returns  Standard Deviation     Alpha      Beta  ...  Intercept Correlation R-Squared  p-Value Standard Error
+SPY       2.527579          0.146296            0.146694  0.000581  0.995586  ...  -0.000001    0.998551  0.997105      0.0       0.001076
+BND       0.427878          0.036720            0.032511  0.035299  -0.07045  ...   0.000751   -0.318825  0.101649      0.0       0.085549
+GLD       0.331656          0.041410            0.154716  0.032854 -0.017742  ...   0.000547   -0.016872  0.000285  0.39758       0.018964
+
+[3 rows x 13 columns]
+```
