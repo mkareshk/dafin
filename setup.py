@@ -19,10 +19,9 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     install_requires=[
-        "seaborn>=0.11.2",
-        "yfinance>=0.1.74",
+        "seaborn>=0.12.0",
+        "yfinance>=0.2.3",
         "yahoo_fin>=0.8.9.1",
-        "tabulate>=0.8.10",
         "scipy>=1.9.3",
     ],
     python_requires=">=3.10",
