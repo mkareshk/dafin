@@ -18,12 +18,7 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    install_requires=[
-        "seaborn>=0.12.0",
-        "yfinance>=0.2.3",
-        "yahoo_fin>=0.8.9.1",
-        "scipy>=1.9.3",
-    ],
+    install_requires=["seaborn", "yfinance>=0.2.31", "scipy"],
     python_requires=">=3.10",
     extras_require={
         "test": [

@@ -133,3 +133,4 @@ dmypy.json
 data_returns/
 cache_dafin/
 notebooks/cache_dafin/
+.DS_Store

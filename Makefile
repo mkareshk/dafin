@@ -1,10 +1,10 @@
 SHELL := /bin/bash
 
 install:
-	pip3 install .
+	pip install .
 
 install_code:
-	pip3 install -e .
+	pip install -e .[test]
 
 test:
 	pytest --cov-report term-missing --cov=dafin tests/

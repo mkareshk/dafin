@@ -1,95 +1,151 @@
 from pathlib import Path
 
-import scipy as sc
 import numpy as np
 import pandas as pd
 
-from dafin.utils import *
-from dafin.plot import Plot
+from .utils import *
+from .plot import Plot
 
 
 class Performance:
-    def __init__(
-        self,
-        returns_assets: pd.DataFrame,
-        returns_rf: pd.DataFrame = None,
-        returns_benchmark: pd.DataFrame = None,
-        returns_period: int = None,
-    ) -> None:
+    def __init__(self,
+                 returns_assets: pd.DataFrame,
+                 returns_rf: pd.DataFrame = None,
+                 returns_benchmark: pd.DataFrame = None) -> None:
+        """
+        Initializes the Performance object with provided asset, risk-free, and benchmark returns.
+        
+        Parameters:
+        - returns_assets: A DataFrame containing the returns of multiple assets.
+        - returns_rf: A DataFrame containing the returns of the risk-free asset (optional).
+        - returns_benchmark: A DataFrame containing the returns of the benchmark asset (optional).
 
-        # check values and types of the asset returns
-        self.returns_assets = returns_assets
-        check_type(self.returns_assets, "returns_assets", pd.DataFrame)
+        Raises:
+        - ValueError: If returns_assets DataFrame is empty.
+
+        Examples:
+        >>> returns_assets = pd.DataFrame({"Asset1": [0.01, 0.02, -0.01], "Asset2": [-0.01, 0.03, 0.02]})
+        >>> performance = Performance(returns_assets)
+        >>> performance.returns_assets
+           Asset1  Asset2
+        0    0.01   -0.01
+        1    0.02    0.03
+        2   -0.01    0.02
+        """
+        
         if returns_assets.empty:
             raise ValueError("returns_assets cannot be empty")
 
-        # use a zero vector as the risk-free asset if it is not passed
+        self.returns_assets = returns_assets
+        
+        # If risk-free returns are not provided, create a DataFrame with zeros
         if returns_rf is None:
-            idx = self.returns_assets.index
-            data = np.zeros(self.returns_assets.shape[0])
-            self.returns_rf = pd.DataFrame(index=idx, data=data)
+            self.returns_rf = pd.DataFrame(data=np.zeros(len(returns_assets)),
+                                           index=returns_assets.index,
+                                           columns=["RiskFree"])
         else:
             self.returns_rf = returns_rf
-        check_type(self.returns_assets, "returns_assets", pd.DataFrame)
+            
+        # If benchmark returns are not provided, use the risk-free returns as benchmark
+        self.returns_benchmark = returns_benchmark if returns_benchmark is not None else self.returns_rf.copy()
 
-        # use the risk-free returns as benchmark if it is not passed
-        if returns_benchmark is None:
-            self.returns_benchmark = self.returns_rf.copy()
-        else:
-            self.returns_benchmark = returns_benchmark
-        check_type(self.returns_benchmark, "returns_benchmark", pd.DataFrame)
-
-        # if data_period id not passed, assume that the data is daily by default
-        if not returns_period:
-            self.returns_period = get_days_per_year(self.returns_assets)
-        else:
-            self.returns_period = returns_period
-        check_type(self.returns_period, "returns_period", int)
-
-        # derived parameters
-        self.assets = list(self.returns_assets.columns)
-        self.asset_rf = list(self.returns_rf.columns)[0]
-        self.asset_benchmark = list(self.returns_benchmark.columns)[0]
+        self.assets = self.returns_assets.columns.tolist()
+        self.asset_rf = self.returns_rf.columns[0]
+        self.asset_benchmark = self.returns_benchmark.columns[0]
         self.date_start_str = date_to_str(self.returns_assets.index[0])
         self.date_end_str = date_to_str(self.returns_assets.index[-1])
-
-        # plot
+        
+        # Initialize plotting object
         self.plot = Plot()
 
     @property
     def returns_cum(self) -> pd.DataFrame:
-        return (self.returns_assets + 1).cumprod() - 1
+        """Returns the cumulative returns of the assets.
+
+        Returns:
+            pd.DataFrame: Cumulative returns.
+        """
+
+        return calc_returns_cum(self.returns_assets)
 
     @property
     def returns_total(self) -> pd.DataFrame:
-        return self.returns_cum.iloc[-1, :].to_frame()
+        """Returns the total returns of the assets.
+
+        Returns:
+            pd.DataFrame: Total returns.
+        """
+
+        return calc_returns_total(self.returns_assets)
 
     @property
     def cov(self) -> pd.DataFrame:
+        """Returns the covariance matrix of the assets.
+
+        Returns:
+            pd.DataFrame: Covariance matrix.
+        """
+
         return self.returns_assets.cov()
 
     @property
     def corr(self) -> pd.DataFrame:
+        """Returns the correlation matrix of the assets.
+
+        Returns:
+            pd.DataFrame: Correlation matrix.
+        """
+
         return self.returns_assets.corr()
 
     @property
     def returns_assets_annualized(self) -> pd.DataFrame:
-        return annualize_returns(self.returns_assets, self.returns_period)
+        """Returns the annualized returns of the assets.
+
+        Returns:
+            pd.DataFrame: Annualized returns.
+        """
+
+        return calc_annualized_returns(self.returns_assets)
 
     @property
     def sd_assets_annualized(self) -> pd.DataFrame:
-        return annualize_sd(self.returns_assets, self.returns_period)
+        """Returns the annualized standard deviation of the assets.
+
+        Returns:
+            pd.DataFrame: Annualized standard deviation.
+        """
+
+        return calc_annualized_sd(self.returns_assets)
 
     @property
     def returns_rf_annualized(self) -> pd.DataFrame:
-        return annualize_returns(self.returns_rf, self.returns_period).iloc[0]
+        """Returns the annualized returns of the risk-free asset.
+
+        Returns:
+            pd.DataFrame: Annualized returns of the risk-free asset.
+        """
+
+        return calc_annualized_returns(self.returns_rf).iloc[0]
 
     @property
     def returns_benchmark_annualized(self) -> pd.DataFrame:
-        return annualize_returns(self.returns_benchmark, self.returns_period).iloc[0]
+        """Returns the annualized returns of the benchmark.
+
+        Returns:
+            pd.DataFrame: Annualized returns of the benchmark.
+        """
+
+        return calc_annualized_returns(self.returns_benchmark).iloc[0]
 
     @property
     def mean_sd(self) -> pd.DataFrame:
+        """Returns the mean and standard deviation of the assets.
+
+        Returns:
+            pd.DataFrame: Mean and standard deviation of the assets.
+        """
+
         mean_sd = pd.DataFrame(index=self.assets, columns=["mean", "sd"])
         mean_sd["mean"] = self.returns_assets_annualized
         mean_sd["sd"] = self.sd_assets_annualized
@@ -97,75 +153,60 @@ class Performance:
 
     @property
     def beta(self) -> pd.DataFrame:
-        # beta = cov(asset, benchmark) / var(benchmark)
+        """Returns the beta of the assets.
 
-        rb = self.returns_benchmark
-        beta = pd.DataFrame(index=self.returns_assets.columns, columns=["beta"])
+        Returns:
+            pd.DataFrame: Beta of the assets.
+        """
 
-        for asset in self.returns_assets.columns:
-            cov = pd.concat([self.returns_assets[asset], rb], axis=1).cov()
-            beta.loc[asset, "beta"] = cov.iloc[0, 1] / cov.iloc[1, 1]
-
-        return beta
+        return calculate_beta(self.returns_assets, self.returns_benchmark)
 
     @property
     def alpha(self) -> pd.DataFrame:
-        # Alpha = asset – rf – beta * (benchmark - rf)
+        """Returns the alpha of the assets.
 
-        beta = self.beta
-        b = beta.to_numpy()
-        n_assets = self.returns_assets.shape[1]
-        ri = self.returns_assets_annualized.to_numpy().reshape(n_assets, -1)
-        rb = self.returns_benchmark_annualized
-        rf = self.returns_rf_annualized
-        alpha_data = ri - rf - b * (rb - rf)
-        alpha = pd.DataFrame(index=beta.index, columns=["alpha"], data=alpha_data)
+        Returns:
+            pd.DataFrame: Alpha of the assets.
+        """
 
-        return alpha
+        return calculate_alpha(
+            self.returns_assets,
+            self.returns_rf,
+            self.returns_benchmark,
+        )
 
     @property
     def regression(self) -> pd.DataFrame:
+        """Returns the regression of the assets.
 
-        df_index = self.returns_assets.columns
-        df_cols = [
-            "Slope",
-            "Intercept",
-            "Correlation",
-            "R-Squared",
-            "p-Value",
-            "Standard Error",
-        ]
+        Returns:
+            pd.DataFrame: Regression of the assets.
+        """
 
-        regression = pd.DataFrame(index=df_index, columns=df_cols)
-        b = self.returns_benchmark
-
-        for i in regression.index:
-            X = pd.concat([self.returns_assets[i], b], axis=1).to_numpy()
-            slope, intercept, r_value, p_value, std_err = sc.stats.linregress(X)
-            regression.loc[i, :] = (
-                slope,
-                intercept,
-                r_value,
-                r_value**2,
-                p_value,
-                std_err,
-            )
-
-        return regression
+        return regression(self.returns_assets, self.returns_benchmark)
 
     @property
     def sharpe_ratio(self) -> pd.DataFrame:
-        excess_returns = self.returns_assets_annualized - self.returns_rf_annualized
-        sharpe_ratio = excess_returns / self.sd_assets_annualized
-        return sharpe_ratio
+        return calculate_sharpe_ratio(
+            self.returns_assets,
+            self.returns_rf,
+        )
 
     @property
     def treynor_ratio(self) -> pd.DataFrame:
-        excess_returns = self.returns_assets_annualized - self.returns_rf_annualized
-        treynor_ratio = excess_returns / self.beta["beta"]
-        return treynor_ratio
+        return calculate_treynor_ratio(
+            self.returns_assets,
+            self.returns_rf,
+            self.returns_benchmark,
+        )
 
     def __str__(self) -> str:
+        """Returns a string representation of the object.
+
+        Returns:
+            str: String representation of the object.
+        """
+
         return (
             "Performance:\n"
             # assets
@@ -175,13 +216,17 @@ class Performance:
             # date
             + f"\t- Start Date: {self.date_start_str}\n"
             + f"\t- End Date: {self.date_end_str}\n"
-            + f"\t- Days Per Year: {self.returns_period}\n"
             # performance
             + f"\t - Performance Summary:\n{self.summary}\n\n\n"
         )
 
     @property
     def summary(self) -> pd.DataFrame:
+        """Returns a summary of the performance.
+
+        Returns:
+            pd.DataFrame: Summary of the performance.
+        """
 
         s = pd.DataFrame()
         s.index = self.returns_assets.columns

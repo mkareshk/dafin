@@ -21,19 +21,16 @@ def test_use_case_performance(assets, asset_single, path_cache):
         returns_benchmark = ReturnsData(
             [asset_single], path_cache=path_cache
         ).get_returns()
-        returns_period = 252
         assert_returns(returns_rf, asset_single)
         assert_returns(returns_benchmark, asset_single)
     else:
         returns_rf = None
         returns_benchmark = None
-        returns_period = None
 
     performance = Performance(
         returns_assets=returns_assets,
         returns_rf=returns_rf,
         returns_benchmark=returns_benchmark,
-        returns_period=returns_period,
     )
     performance.save_results(path_cache / Path("test_results"))
     assert (performance.summary["Alpha"], pd.DataFrame)

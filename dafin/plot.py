@@ -6,12 +6,12 @@ import matplotlib.pyplot as plt
 import matplotlib.pylab as pylab
 from matplotlib.ticker import FormatStrFormatter
 
-sns.set()
-sns.set_style("whitegrid")
+sns.set()  # set seaborn as default
+sns.set_style("whitegrid")  # set seaborn style
 
 # general configuration for matplotlib
-DEFAULT_SIZE = (15, 8)
-DEFAULT_SIZE_SQUARE = (15, 15)
+DEFAULT_SIZE = (15, 8)  # default figure size
+DEFAULT_SIZE_SQUARE = (15, 15)  # default figure size for square plots
 
 params = {
     "font.family": "serif",
@@ -21,7 +21,7 @@ params = {
     "axes.titlesize": "x-large",
     "xtick.labelsize": "large",
     "ytick.labelsize": "large",
-}
+}  # default figure size
 pylab.rcParams.update(params)
 
 
