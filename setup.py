@@ -18,12 +18,14 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    install_requires=[
-        "seaborn>=0.11.2",
-        "yfinance>=0.1.68",
-    ],
-    python_requires=">=3.8",
+    install_requires=["seaborn", "yfinance>=0.2.31", "scipy"],
+    python_requires=">=3.10",
     extras_require={
-        "test": ["pytest", "pytest-cov", "parameterized"],
+        "test": [
+            "pytest",
+            "pytest-cov",
+            "pytest-parametrized",
+            "pylint",
+        ],
     },
 )
