@@ -8,13 +8,15 @@ from .plot import Plot
 
 
 class Performance:
-    def __init__(self,
-                 returns_assets: pd.DataFrame,
-                 returns_rf: pd.DataFrame = None,
-                 returns_benchmark: pd.DataFrame = None) -> None:
+    def __init__(
+        self,
+        returns_assets: pd.DataFrame,
+        returns_rf: pd.DataFrame = None,
+        returns_benchmark: pd.DataFrame = None,
+    ) -> None:
         """
         Initializes the Performance object with provided asset, risk-free, and benchmark returns.
-        
+
         Parameters:
         - returns_assets: A DataFrame containing the returns of multiple assets.
         - returns_rf: A DataFrame containing the returns of the risk-free asset (optional).
@@ -32,29 +34,35 @@ class Performance:
         1    0.02    0.03
         2   -0.01    0.02
         """
-        
+
         if returns_assets.empty:
             raise ValueError("returns_assets cannot be empty")
 
         self.returns_assets = returns_assets
-        
+
         # If risk-free returns are not provided, create a DataFrame with zeros
         if returns_rf is None:
-            self.returns_rf = pd.DataFrame(data=np.zeros(len(returns_assets)),
-                                           index=returns_assets.index,
-                                           columns=["RiskFree"])
+            self.returns_rf = pd.DataFrame(
+                data=np.zeros(len(returns_assets)),
+                index=returns_assets.index,
+                columns=["RiskFree"],
+            )
         else:
             self.returns_rf = returns_rf
-            
+
         # If benchmark returns are not provided, use the risk-free returns as benchmark
-        self.returns_benchmark = returns_benchmark if returns_benchmark is not None else self.returns_rf.copy()
+        self.returns_benchmark = (
+            returns_benchmark
+            if returns_benchmark is not None
+            else self.returns_rf.copy()
+        )
 
         self.assets = self.returns_assets.columns.tolist()
         self.asset_rf = self.returns_rf.columns[0]
         self.asset_benchmark = self.returns_benchmark.columns[0]
         self.date_start_str = date_to_str(self.returns_assets.index[0])
         self.date_end_str = date_to_str(self.returns_assets.index[-1])
-        
+
         # Initialize plotting object
         self.plot = Plot()
 
@@ -231,13 +239,13 @@ class Performance:
         s = pd.DataFrame()
         s.index = self.returns_assets.columns
 
-        s["Total Returns"] = self.returns_total
-        s["Expected Returns"] = self.returns_assets_annualized
-        s["Standard Deviation"] = self.sd_assets_annualized
-        s["Alpha"] = self.alpha
-        s["Beta"] = self.beta
-        s["Sharpe Ratio"] = self.sharpe_ratio
-        s["Treynor Ratio"] = self.treynor_ratio
+        s["total_returns"] = self.returns_total
+        s["expected_returns"] = self.returns_assets_annualized
+        s["standard_deviation"] = self.sd_assets_annualized
+        s["alpha"] = self.alpha
+        s["beta"] = self.beta
+        s["sharpe_ratio"] = self.sharpe_ratio
+        s["treynor_ratio"] = self.treynor_ratio
 
         s = pd.concat([s, self.regression], axis=1)
 

@@ -14,17 +14,16 @@ DEFAULT_DAYS_PER_YEAR = 252  # 252 trading days per year
 
 
 def calculate_beta(
-    returns: pd.DataFrame, 
-    returns_benchmark: pd.DataFrame
+    returns: pd.DataFrame, returns_benchmark: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Calculates the beta of the assets given a benchmark.
     Beta = covariance(asset returns, benchmark returns) / variance(benchmark returns)
-    
+
     Parameters:
         returns (pd.DataFrame): Daily returns of the assets.
         returns_benchmark (pd.DataFrame): Daily returns of the benchmark.
-        
+
     Returns:
         pd.DataFrame: A DataFrame containing the beta of each asset relative to the benchmark.
 
@@ -37,7 +36,7 @@ def calculate_beta(
         A     ...
         B     ...
     """
-    
+
     # Create a DataFrame to store the beta values for each asset
     beta_df = pd.DataFrame(index=returns.columns, columns=["beta"])
 
@@ -55,19 +54,17 @@ def calculate_beta(
 
 
 def calculate_alpha(
-    returns: pd.DataFrame, 
-    returns_rf: pd.DataFrame, 
-    returns_benchmark: pd.DataFrame
+    returns: pd.DataFrame, returns_rf: pd.DataFrame, returns_benchmark: pd.DataFrame
 ) -> pd.DataFrame:
     """
     Calculates the alpha of the assets given a benchmark.
     Alpha = asset return - risk-free return - beta * (benchmark return - risk-free return)
-    
+
     Parameters:
         returns (pd.DataFrame): Daily returns of the assets.
         returns_rf (pd.DataFrame): Daily returns of the risk-free asset.
         returns_benchmark (pd.DataFrame): Daily returns of the benchmark.
-        
+
     Returns:
         pd.DataFrame: Alpha of the assets.
 
@@ -81,10 +78,10 @@ def calculate_alpha(
         A     ...
         B     ...
     """
-    
+
     # Calculate beta for each asset relative to the benchmark
     beta = calculate_beta(returns, returns_benchmark)
-    
+
     # Calculate annualized returns for assets, risk-free asset, and benchmark
     ri = calc_annualized_returns(returns)
     rb = calc_annualized_returns(returns_benchmark).iloc[0]
@@ -102,11 +99,11 @@ def calculate_alpha(
 def regression(returns: pd.DataFrame, returns_benchmark: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates the regression of the assets given a benchmark.
-    
+
     Parameters:
         returns (pd.DataFrame): Daily returns of the assets.
         returns_benchmark (pd.DataFrame): Daily returns of the benchmark.
-        
+
     Returns:
         pd.DataFrame: A DataFrame containing regression statistics for each asset relative to the benchmark.
 
@@ -121,7 +118,14 @@ def regression(returns: pd.DataFrame, returns_benchmark: pd.DataFrame) -> pd.Dat
     """
 
     # Define DataFrame structure to hold regression results
-    df_cols = ["Slope", "Intercept", "Correlation", "R-Squared", "p-Value", "Standard Error"]
+    df_cols = [
+        "Slope",
+        "Intercept",
+        "Correlation",
+        "R-Squared",
+        "p-Value",
+        "Standard Error",
+    ]
     regression_results = pd.DataFrame(index=returns.columns, columns=df_cols)
 
     for asset in returns.columns:
@@ -129,7 +133,9 @@ def regression(returns: pd.DataFrame, returns_benchmark: pd.DataFrame) -> pd.Dat
         data = pd.concat([returns[asset], returns_benchmark], axis=1).dropna()
 
         # Performing linear regression
-        slope, intercept, r_value, p_value, std_err = sp.stats.linregress(data.iloc[:, 0], data.iloc[:, 1])
+        slope, intercept, r_value, p_value, std_err = sp.stats.linregress(
+            data.iloc[:, 0], data.iloc[:, 1]
+        )
 
         # Assigning regression results to the DataFrame
         regression_results.loc[asset] = (
@@ -145,16 +151,15 @@ def regression(returns: pd.DataFrame, returns_benchmark: pd.DataFrame) -> pd.Dat
 
 
 def calculate_sharpe_ratio(
-    returns: pd.DataFrame, 
-    returns_rf: pd.DataFrame
+    returns: pd.DataFrame, returns_rf: pd.DataFrame
 ) -> pd.Series:
     """
     Calculates the Sharpe ratio of the assets given a risk-free asset.
-    
+
     Parameters:
         returns (pd.DataFrame): Daily returns of the assets.
         returns_rf (pd.DataFrame): Daily returns of the risk-free asset.
-        
+
     Returns:
         pd.Series: Sharpe ratio of the assets.
 
@@ -166,7 +171,7 @@ def calculate_sharpe_ratio(
         return    ...
         dtype: float64
     """
-    
+
     # Calculate the annualized returns of the assets and risk-free asset
     ri = calc_annualized_returns(returns)
     rf = calc_annualized_returns(returns_rf).iloc[0]
@@ -181,18 +186,16 @@ def calculate_sharpe_ratio(
 
 
 def calculate_treynor_ratio(
-    returns: pd.DataFrame, 
-    returns_rf: pd.DataFrame, 
-    returns_benchmark: pd.DataFrame
+    returns: pd.DataFrame, returns_rf: pd.DataFrame, returns_benchmark: pd.DataFrame
 ) -> pd.Series:
     """
     Calculates the Treynor ratio of the assets given a risk-free asset and a benchmark.
-    
+
     Parameters:
         returns (pd.DataFrame): Daily returns of the assets.
         returns_rf (pd.DataFrame): Daily returns of the risk-free asset.
         returns_benchmark (pd.DataFrame): Daily returns of the benchmark.
-        
+
     Returns:
         pd.Series: Treynor ratio of the assets.
 
@@ -205,13 +208,15 @@ def calculate_treynor_ratio(
         return    ...
         dtype: float64
     """
-    
+
     # Calculate the annualized returns of the assets and risk-free asset
     ri = calc_annualized_returns(returns)
     rf = calc_annualized_returns(returns_rf).iloc[0]
 
     # Calculate the beta of the assets with respect to the benchmark
-    beta = calculate_beta(returns, returns_benchmark)  # Corrected the typo in the function name
+    beta = calculate_beta(
+        returns, returns_benchmark
+    )  # Corrected the typo in the function name
 
     # Compute the Treynor ratio: (ri - rf) / beta
     treynor_ratio = (ri - rf).iloc[0] / beta
@@ -222,10 +227,10 @@ def calculate_treynor_ratio(
 def calc_returns_cum(returns: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates the cumulative returns from the daily returns.
-    
+
     Parameters:
         returns (pd.DataFrame): A DataFrame containing daily returns.
-        
+
     Returns:
         pd.DataFrame: A DataFrame containing the cumulative returns, with the same structure as the input DataFrame.
 
@@ -240,8 +245,8 @@ def calc_returns_cum(returns: pd.DataFrame) -> pd.DataFrame:
         3  0.024513
         4  0.044928
     """
-    
-    # Calculating cumulative returns by first adding 1 to daily returns, 
+
+    # Calculating cumulative returns by first adding 1 to daily returns,
     # then calculating the cumulative product, and finally subtracting 1 to get the cumulative returns.
     cumulative_returns = (returns + 1).cumprod() - 1
 
@@ -251,10 +256,10 @@ def calc_returns_cum(returns: pd.DataFrame) -> pd.DataFrame:
 def calc_returns_total(returns: pd.DataFrame) -> pd.Series:
     """
     Calculates the total returns from the daily returns.
-    
+
     Parameters:
         returns (pd.DataFrame): A DataFrame containing daily returns.
-        
+
     Returns:
         pd.Series: A Series containing the total returns for each column in the input DataFrame.
 
@@ -265,9 +270,11 @@ def calc_returns_total(returns: pd.DataFrame) -> pd.Series:
         return    0.061805
         dtype: float64
     """
-    
+
     # Calculate cumulative returns using a predefined function
-    cumulative_returns = calc_returns_cum(returns)  # Assuming calc_returns_cum is defined elsewhere in the code
+    cumulative_returns = calc_returns_cum(
+        returns
+    )  # Assuming calc_returns_cum is defined elsewhere in the code
 
     # Return the last row of the cumulative returns DataFrame as the total returns
     return cumulative_returns.iloc[-1, :]
@@ -276,10 +283,10 @@ def calc_returns_total(returns: pd.DataFrame) -> pd.Series:
 def calc_annualized_returns(returns: pd.DataFrame) -> pd.DataFrame:
     """
     Calculates the annualized returns from daily returns.
-    
+
     Parameters:
         returns (pd.DataFrame): A DataFrame containing daily returns.
-        
+
     Returns:
         pd.DataFrame: A DataFrame containing the annualized returns calculated from the daily returns.
 
@@ -290,9 +297,11 @@ def calc_annualized_returns(returns: pd.DataFrame) -> pd.DataFrame:
         return    1.161...
         dtype: float64
     """
-    
+
     # Calculate total returns using a predefined function
-    returns_total = calc_returns_total(returns)  # Assuming calc_returns_total is defined elsewhere in the code
+    returns_total = calc_returns_total(
+        returns
+    )  # Assuming calc_returns_total is defined elsewhere in the code
 
     # Calculate the days factor for annualization based on the number of records in returns data
     days_factor = DEFAULT_DAYS_PER_YEAR / returns.shape[0]
@@ -318,7 +327,7 @@ def calc_annualized_sd(returns: pd.DataFrame) -> pd.DataFrame:
         return    0.369274
         dtype: float64
     """
-    
+
     # Calculating the standard deviation of daily returns
     daily_std = returns.std()
 
@@ -331,11 +340,11 @@ def calc_annualized_sd(returns: pd.DataFrame) -> pd.DataFrame:
 def price_to_return(prices_df: pd.DataFrame, log_return: bool = False) -> pd.DataFrame:
     """
     Converts price data into daily returns, either as regular or log returns.
-    
+
     Parameters:
         prices_df (pd.DataFrame): A DataFrame containing price data.
         log_return (bool, optional): If True, calculates log returns; otherwise, calculates regular returns. Defaults to False.
-        
+
     Returns:
         pd.DataFrame: A DataFrame containing the daily returns, with the same structure as the input DataFrame.
 
@@ -349,7 +358,7 @@ def price_to_return(prices_df: pd.DataFrame, log_return: bool = False) -> pd.Dat
         3  0.287682
         4  0.223144
     """
-    
+
     # Calculate log returns if log_return is True, else calculate regular returns
     if log_return:
         # Using numpy to calculate the log returns
@@ -365,10 +374,10 @@ def price_to_return(prices_df: pd.DataFrame, log_return: bool = False) -> pd.Dat
 def date_to_str(date: datetime.datetime) -> str:
     """
     Converts a datetime object to a string in the format "YYYY-MM-DD".
-    
+
     Parameters:
         date (datetime.datetime): The date as a datetime object.
-        
+
     Returns:
         str: The formatted date as a string.
 
@@ -376,7 +385,7 @@ def date_to_str(date: datetime.datetime) -> str:
         >>> date_to_str(datetime.datetime(2022, 10, 22))
         '2022-10-22'
     """
-    
+
     # Formatting the datetime object into a string using the specified date format
     return date.strftime(DEFAULT_DATE_FMT)
 
@@ -384,10 +393,10 @@ def date_to_str(date: datetime.datetime) -> str:
 def str_to_date(date_str: str) -> datetime.datetime:
     """
     Converts a date string in the format "YYYY-MM-DD" to a datetime object.
-    
+
     Parameters:
         date_str (str): The date as a string in the format "YYYY-MM-DD".
-        
+
     Returns:
         datetime.datetime: The converted date as a datetime object.
 
@@ -395,12 +404,14 @@ def str_to_date(date_str: str) -> datetime.datetime:
         >>> str_to_date("2022-10-22")
         datetime.datetime(2022, 10, 22, 0, 0)
     """
-    
+
     # Parsing the date string into a datetime object using the specified format
     return datetime.datetime.strptime(date_str, DEFAULT_DATE_FMT)
 
 
-def normalize_date(date: Union[datetime.datetime, str]) -> Tuple[datetime.datetime, str]:
+def normalize_date(
+    date: Union[datetime.datetime, str]
+) -> Tuple[datetime.datetime, str]:
     """
     Converts a date to both a datetime object and a string, and returns them as a tuple.
 
@@ -419,17 +430,26 @@ def normalize_date(date: Union[datetime.datetime, str]) -> Tuple[datetime.dateti
         >>> normalize_date(datetime.datetime(2022, 10, 22))
         (datetime.datetime(2022, 10, 22, 0, 0), '2022-10-22')
     """
-    
+
     if isinstance(date, str):
         date_str = date
-        date_dt = str_to_date(date)  # Assuming str_to_date is defined and available to convert string to datetime
+        date_dt = str_to_date(
+            date
+        )  # Assuming str_to_date is defined and available to convert string to datetime
     elif isinstance(date, datetime.datetime):
-        date_str = date_to_str(date)  # Assuming date_to_str is defined and available to convert datetime to string
+        date_str = date_to_str(
+            date
+        )  # Assuming date_to_str is defined and available to convert datetime to string
         date_dt = date
+
+    elif isinstance(date, datetime.date):
+        date_str = date.strftime(DEFAULT_DATE_FMT)
+        date_dt = datetime.datetime.combine(date, datetime.datetime.min.time())
+
     else:
         raise ValueError(
             "The date type should be either datetime.datetime "
             f"or str (e.g. '2014-03-24'). The provided date {date} type is {type(date)}."
         )
-    
+
     return date_dt, date_str
