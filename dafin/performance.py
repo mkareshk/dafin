@@ -3,18 +3,20 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .utils import *
 from .plot import Plot
+from .utils import *
 
 
 class Performance:
-    def __init__(self,
-                 returns_assets: pd.DataFrame,
-                 returns_rf: pd.DataFrame = None,
-                 returns_benchmark: pd.DataFrame = None) -> None:
+    def __init__(
+        self,
+        returns_assets: pd.DataFrame,
+        returns_rf: pd.DataFrame = None,
+        returns_benchmark: pd.DataFrame = None,
+    ) -> None:
         """
         Initializes the Performance object with provided asset, risk-free, and benchmark returns.
-        
+
         Parameters:
         - returns_assets: A DataFrame containing the returns of multiple assets.
         - returns_rf: A DataFrame containing the returns of the risk-free asset (optional).
@@ -32,29 +34,35 @@ class Performance:
         1    0.02    0.03
         2   -0.01    0.02
         """
-        
+
         if returns_assets.empty:
             raise ValueError("returns_assets cannot be empty")
 
         self.returns_assets = returns_assets
-        
+
         # If risk-free returns are not provided, create a DataFrame with zeros
         if returns_rf is None:
-            self.returns_rf = pd.DataFrame(data=np.zeros(len(returns_assets)),
-                                           index=returns_assets.index,
-                                           columns=["RiskFree"])
+            self.returns_rf = pd.DataFrame(
+                data=np.zeros(len(returns_assets)),
+                index=returns_assets.index,
+                columns=["RiskFree"],
+            )
         else:
             self.returns_rf = returns_rf
-            
+
         # If benchmark returns are not provided, use the risk-free returns as benchmark
-        self.returns_benchmark = returns_benchmark if returns_benchmark is not None else self.returns_rf.copy()
+        self.returns_benchmark = (
+            returns_benchmark
+            if returns_benchmark is not None
+            else self.returns_rf.copy()
+        )
 
         self.assets = self.returns_assets.columns.tolist()
         self.asset_rf = self.returns_rf.columns[0]
         self.asset_benchmark = self.returns_benchmark.columns[0]
         self.date_start_str = date_to_str(self.returns_assets.index[0])
         self.date_end_str = date_to_str(self.returns_assets.index[-1])
-        
+
         # Initialize plotting object
         self.plot = Plot()
 

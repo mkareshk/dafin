@@ -1,6 +1,6 @@
+import shutil
 from pathlib import Path
 
-import shutil
 import pandas as pd
 
 from dafin.utils import DEFAULT_CACHE_DIR
@@ -20,6 +20,7 @@ col_price_list = ["Open", "Close", "Adj Close"]
 
 # path
 DEFAULT_TEST_DIR = DEFAULT_CACHE_DIR / Path("test")
+
 
 # params
 def assert_returns(returns_assets, assets):
