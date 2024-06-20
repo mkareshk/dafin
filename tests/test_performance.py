@@ -1,11 +1,11 @@
 from pathlib import Path
 
-import pytest
 import pandas as pd
+import pytest
 
-from dafin import ReturnsData, Performance
+from dafin import Performance, ReturnsData
 
-from .utils import clean_dir, assert_returns, pnames_performance, params_performance
+from .utils import assert_returns, clean_dir, params_performance, pnames_performance
 
 
 @pytest.mark.parametrize(pnames_performance, params_performance)

@@ -3,8 +3,8 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from .utils import *
 from .plot import Plot
+from .utils import *
 
 
 class Performance:

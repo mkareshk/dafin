@@ -1,12 +1,11 @@
 import datetime
+import time
 from pathlib import Path
-from typing import Union, Tuple
+from typing import Tuple, Union
 
-
-import scipy as sp
 import numpy as np
 import pandas as pd
-
+import scipy as sp
 
 DEFAULT_DATE_FMT = "%Y-%m-%d"  # ISO 8601
 DEFAULT_CACHE_DIR = Path.home() / Path(".cache") / "dafin"  # ~/.cache/dafin by default
@@ -446,6 +445,11 @@ def normalize_date(
         date_str = date.strftime(DEFAULT_DATE_FMT)
         date_dt = datetime.datetime.combine(date, datetime.datetime.min.time())
 
+    elif isinstance(date, datetime.date):
+        date_dt = datetime.datetime.combine(date, datetime.time.min)
+        date_str = date_to_str(
+            date
+        )  # Assuming date_to_str is defined and available to convert datetime to string
     else:
         raise ValueError(
             "The date type should be either datetime.datetime "
