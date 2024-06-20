@@ -1,9 +1,9 @@
 import logging
 
+import matplotlib.pylab as pylab
+import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
-import matplotlib.pyplot as plt
-import matplotlib.pylab as pylab
 from matplotlib.ticker import FormatStrFormatter
 
 # Set seaborn as default
@@ -37,7 +37,9 @@ class Plot:
         # Set up logging for this class using the module's name
         self.logger = logging.getLogger(__name__)
 
-    def plot_box(self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, yscale="symlog"):
+    def plot_box(
+        self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, yscale="symlog"
+    ):
         """
         Plot a box plot for the given DataFrame.
 
@@ -60,7 +62,7 @@ class Plot:
         """
 
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         # Plot the box plot
         df.plot.box(
             showfliers=False,
@@ -77,18 +79,19 @@ class Plot:
         # Set y-scale
         linthresh = 0.001 if yscale != "linear" else None
         ax.set_yscale(yscale, linthresh=linthresh)
-        
+
         # Adjust x-axis labels
         ax.set_xticklabels(ax.get_xticklabels(), rotation=45)
-        
+
         # Set grid and adjust layout
         ax.yaxis.grid(True)
         fig.tight_layout()
 
         return fig, ax
 
-
-    def plot_heatmap(self, df, relation_type, title="", annotate=True, figsize=DEFAULT_SIZE):
+    def plot_heatmap(
+        self, df, relation_type, title="", annotate=True, figsize=DEFAULT_SIZE
+    ):
         """
         Plot a heatmap based on the relation type specified.
 
@@ -105,7 +108,7 @@ class Plot:
 
         Raises:
         - NotImplementedError: If the relation type provided is not 'corr' or 'cov'.
-        
+
         >>> import pandas as pd  # assuming a mock dataframe for doctest
         >>> df = pd.DataFrame({"A": [1, 2, 3], "B": [2, 3, 4]})
         >>> instance = Plot()  # Assuming the class name is 'Plot'
@@ -113,7 +116,7 @@ class Plot:
         """
 
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         # Determine the type of relation and set appropriate parameters
         if relation_type == "corr":
             relations = df.corr()
@@ -129,7 +132,7 @@ class Plot:
         # Set mask for heatmap
         mask = np.zeros_like(relations)
         mask[np.triu_indices_from(mask, k=1)] = True
-        
+
         # Plot heatmap
         sns.heatmap(
             relations,
@@ -142,13 +145,13 @@ class Plot:
             vmax=vmax,
             ax=ax,
             xticklabels=relations.columns,
-            yticklabels=relations.columns
+            yticklabels=relations.columns,
         )
 
         # Adjust x and y ticks
         ax.set_xticklabels(ax.get_xticklabels(), rotation=90)
         ax.set_yticklabels(ax.get_yticklabels(), rotation=0)
-        
+
         # Set title
         ax.set_title(title)
 
@@ -156,9 +159,19 @@ class Plot:
         fig.tight_layout()
 
         return fig, ax
-    
-    def plot_trend(self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, alpha=1.0,
-                legend=True, marker="o", yscale="linear"):
+
+    def plot_trend(
+        self,
+        df,
+        title="",
+        xlabel="",
+        ylabel="",
+        figsize=DEFAULT_SIZE,
+        alpha=1.0,
+        legend=True,
+        marker="o",
+        yscale="linear",
+    ):
         """
         Plot a trend graph using data from the provided DataFrame.
 
@@ -179,7 +192,7 @@ class Plot:
 
         Raises:
         - NotImplementedError: If the yscale provided is not 'linear' or 'symlog'.
-        
+
         >>> import pandas as pd  # assuming a mock dataframe for doctest
         >>> df = pd.DataFrame({"A": [1, 2, 3]})
         >>> instance = Plot()  # Assuming the class name is 'Plot'
@@ -187,16 +200,24 @@ class Plot:
         """
 
         fig, ax = plt.subplots(figsize=figsize)
-        
+
         # Plot the data
-        df.plot(title=title, xlabel=xlabel, ylabel=ylabel, linewidth=1.5, alpha=alpha, ax=ax, marker=marker)
+        df.plot(
+            title=title,
+            xlabel=xlabel,
+            ylabel=ylabel,
+            linewidth=1.5,
+            alpha=alpha,
+            ax=ax,
+            marker=marker,
+        )
 
         # Handle the legend
         if legend:
             ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
         else:
             ax.get_legend().remove()
-        
+
         # Handle yscale settings
         if yscale == "linear":
             ax.set_yscale(yscale)
@@ -213,7 +234,16 @@ class Plot:
 
         return fig, ax
 
-    def plot_bar(self, df, yscale="linear", title="", xlabel="", ylabel="", legend=False, figsize=DEFAULT_SIZE):
+    def plot_bar(
+        self,
+        df,
+        yscale="linear",
+        title="",
+        xlabel="",
+        ylabel="",
+        legend=False,
+        figsize=DEFAULT_SIZE,
+    ):
         """
         Plots a bar graph using the data from the given DataFrame.
 
@@ -235,7 +265,7 @@ class Plot:
         >>> instance = Plot()  # Assuming the class name is 'Plot'
         >>> fig, ax = instance.plot_bar(df, title="Bar Plot", xlabel="Index", ylabel="Value")
         """
-        
+
         fig, ax = plt.subplots(figsize=figsize)
         df.plot.bar(ax=ax, legend=legend)
         ax.grid(True, axis="y")
@@ -248,16 +278,25 @@ class Plot:
 
         if legend:
             ax.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0.0)
-        
+
         fig.tight_layout()
 
         return fig, ax
 
-    def plot_scatter(self, df, title="", xlabel="", ylabel="", figsize=DEFAULT_SIZE, 
-                     colour="tab:blue", fig=None, ax=None):
+    def plot_scatter(
+        self,
+        df,
+        title="",
+        xlabel="",
+        ylabel="",
+        figsize=DEFAULT_SIZE,
+        colour="tab:blue",
+        fig=None,
+        ax=None,
+    ):
         """
         Plot a scatter graph of given dataframe values with labels.
-        
+
         Parameters:
         - df (pd.DataFrame): DataFrame containing columns 'sd' and 'mean' for plotting.
         - title (str): Title of the graph. Default is an empty string.
@@ -267,17 +306,17 @@ class Plot:
         - colour (str): Color of scatter points. Default is "tab:blue".
         - fig (matplotlib.figure.Figure, optional): Figure object if provided, else will create a new one.
         - ax (matplotlib.axes._subplots.AxesSubplot, optional): Axes object if provided, else will create a new one.
-        
+
         Returns:
         - fig (matplotlib.figure.Figure): Figure object.
         - ax (matplotlib.axes._subplots.AxesSubplot): Axes object.
-        
+
         >>> import pandas as pd  # assuming a mock dataframe for doctest
         >>> df = pd.DataFrame({"sd": [1, 2, 3], "mean": [2, 3, 1]})
         >>> instance = SomeClass()
         >>> fig, ax = instance.plot_scatter(df, title="Test", xlabel="SD", ylabel="Mean")
         """
-        
+
         # Create a new figure and axes if not provided
         if not ax:
             fig, ax = plt.subplots(figsize=figsize)
@@ -299,7 +338,7 @@ class Plot:
                 point["sd"] - x_diff * 0.03,
                 point["mean"] + r * y_diff * 0.03,
                 i,
-                fontsize=12
+                fontsize=12,
             )
 
         # Grid, labels, and title
@@ -309,8 +348,12 @@ class Plot:
         ax.set_title(title)
 
         # Adjusting plot limits
-        ax.set_xlim(left=df["sd"].min() - 0.1 * x_diff, right=df["sd"].max() + 0.1 * x_diff)
-        ax.set_ylim(bottom=df["mean"].min() - 0.1 * y_diff, top=df["mean"].max() + 0.1 * y_diff)
+        ax.set_xlim(
+            left=df["sd"].min() - 0.1 * x_diff, right=df["sd"].max() + 0.1 * x_diff
+        )
+        ax.set_ylim(
+            bottom=df["mean"].min() - 0.1 * y_diff, top=df["mean"].max() + 0.1 * y_diff
+        )
 
         # Adjust layout
         fig.tight_layout()

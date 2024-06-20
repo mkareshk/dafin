@@ -1,14 +1,14 @@
-import pickle
-import hashlib
 import datetime
-from typing import List, Union, Optional
+import hashlib
+import pickle
 from functools import reduce
 from pathlib import Path
+from typing import List, Optional, Union
 
 import pandas as pd
 import yfinance as yf
 
-from .utils import DEFAULT_CACHE_DIR, price_to_return, normalize_date
+from .utils import DEFAULT_CACHE_DIR, normalize_date, price_to_return
 
 
 class ReturnsData:
@@ -17,7 +17,7 @@ class ReturnsData:
         self,
         assets: Union[List[str], str],
         col_price: str = "Adj Close",
-        path_cache: Path = DEFAULT_CACHE_DIR
+        path_cache: Path = DEFAULT_CACHE_DIR,
     ) -> None:
         """
         Initializes the Data class with assets, column for price, and the path for cache.
@@ -37,7 +37,7 @@ class ReturnsData:
 
         # Convert to list if a single asset is passed
         self.assets = [assets] if isinstance(assets, str) else assets
-        
+
         self.col_price = col_price
         self.path_prices = path_cache / "prices"
 
@@ -58,10 +58,10 @@ class ReturnsData:
     def get_returns(
         self,
         date_start: Optional[Union[str, datetime.datetime]] = None,
-        date_end: Optional[Union[str, datetime.datetime]] = None
+        date_end: Optional[Union[str, datetime.datetime]] = None,
     ) -> pd.DataFrame:
         """
-        Retrieves the daily returns data for the specified date range. If no date range 
+        Retrieves the daily returns data for the specified date range. If no date range
         is provided, it returns all available data.
 
         Parameters:
@@ -72,12 +72,12 @@ class ReturnsData:
             pd.DataFrame: The daily returns data within the specified date range or all available data if no dates are provided.
 
         Example:
-            Assuming an instance has a `returns` attribute as a DataFrame and 
+            Assuming an instance has a `returns` attribute as a DataFrame and
             `normalize_date` function is defined:
             >>> instance.get_returns('2022-01-01', '2022-01-10')
             <DataFrame with the daily returns data between '2022-01-01' and '2022-01-10'>
         """
-        
+
         # If no date is passed, return all available data
         if not (date_start or date_end):
             return self.returns
@@ -88,7 +88,6 @@ class ReturnsData:
 
         # Return the daily returns data for the specified date range
         return self.returns.loc[date_start:date_end]
-
 
     def _get_price_df(self) -> pd.DataFrame:
         """
@@ -138,26 +137,28 @@ class ReturnsData:
 
         # Raise an error if the aggregated data is empty
         if aggregated_price_df.empty:
-            raise ValueError("Error in data collection, aggregated price data is empty.")
+            raise ValueError(
+                "Error in data collection, aggregated price data is empty."
+            )
 
         return aggregated_price_df
 
     def __str__(self) -> str:
         """
-        Returns the string representation of the class instance, providing detailed 
+        Returns the string representation of the class instance, providing detailed
         information on its current state including the assets, cache path, data signature,
         prices, and returns.
 
         Returns:
             str: The detailed string representation of the class instance.
-            
+
         Example:
             Assuming an instance of the class is already created, the method can be used
             as follows:
             >>> str(instance)
             'Returns Data:\n\t- List of Assets: [...]\n\t- Price Column: ...\n...'
         """
-        
+
         # Creating a list of string segments to be concatenated into the final output
         str_segments = [
             "Returns Data:\n",
@@ -167,11 +168,11 @@ class ReturnsData:
             f"\t- Cache Path: {self.path_prices}\n",
             f"\t- Data Signature: {self._hash}\n",
             f"\t- Prices:\n{self.prices}\n\n\n",
-            f"\t- Returns:\n{self.returns}\n\n\n"
+            f"\t- Returns:\n{self.returns}\n\n\n",
         ]
-        
+
         # Joining all string segments into the final output string
-        return ''.join(str_segments)
+        return "".join(str_segments)
 
 
 def __hash__(self) -> int:
@@ -180,7 +181,7 @@ def __hash__(self) -> int:
 
     Returns:
         int: The hash value of the class instance.
-        
+
     Doctest:
         Assuming the '_hash' attribute is properly set, you can get the hash as follows:
         >>> class Example:

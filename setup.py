@@ -6,7 +6,7 @@ with open("README.md", "r") as file:
 
 setuptools.setup(
     name="dafin",
-    version="0.0.1",
+    version="0.0.2",
     author="Moein Kareshk",
     author_email="mkareshk@outlook.com",
     description="Finance Data",
@@ -18,14 +18,14 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    install_requires=["seaborn", "yfinance>=0.2.31", "scipy"],
+    install_requires=[
+        "seaborn",
+        "yfinance>=0.2.40",
+        "yfinance[nospam]>=0.2.40",
+        "scipy",
+    ],
     python_requires=">=3.10",
     extras_require={
-        "test": [
-            "pytest",
-            "pytest-cov",
-            "pytest-parametrized",
-            "pylint",
-        ],
+        "dev": ["pre-commit", "pytest", "pytest-runner", "pytest-cov"],
     },
 )

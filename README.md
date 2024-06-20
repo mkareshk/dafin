@@ -1,5 +1,5 @@
 # dafin
-dafin is an open-source Python package designed for collecting, storing, and visualizing financial data from any source. It offers user-friendly APIs that present data in Pandas dataframes, making it easy to visualize with standard Matplotlib methods. 
+dafin is an open-source Python package designed for collecting, storing, and visualizing financial data from any source. It offers user-friendly APIs that present data in Pandas dataframes, making it easy to visualize with standard Matplotlib methods.
 
 # install
 
@@ -67,12 +67,12 @@ from dafin import ReturnsData, Performance
 def main():
     """
     Fetch returns data for assets, risk-free assets, and benchmark. Then compute and print the performance summary.
-    
+
     Doctest:
     >>> isinstance(path, Path)
     True
     """
-    
+
     # Define assets, risk-free assets, and benchmark tickers
     assets = ["AAPL", "AMZN", "SPY"]
     assets_rf = ["BND"]

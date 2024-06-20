@@ -2,7 +2,7 @@ import pytest
 
 from dafin import ReturnsData
 
-from .utils import clean_dir, assert_returns, pnames_returns, params_returns
+from .utils import assert_returns, clean_dir, params_returns, pnames_returns
 
 
 @pytest.mark.parametrize(pnames_returns, params_returns)
