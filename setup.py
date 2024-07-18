@@ -6,7 +6,7 @@ with open("README.md", "r") as file:
 
 setuptools.setup(
     name="dafin",
-    version="0.0.2",
+    version="0.0.3",
     author="Moein Kareshk",
     author_email="mkareshk@outlook.com",
     description="Finance Data",
