@@ -6,10 +6,6 @@ from dafin import Performance, ReturnsData
 def main():
     """
     Fetch returns data for assets, risk-free assets, and benchmark. Then compute and print the performance summary.
-
-    Doctest:
-    >>> isinstance(path, Path)
-    True
     """
 
     # Define assets, risk-free assets, and benchmark tickers

@@ -62,15 +62,13 @@ print(returns_data)  # This will print the DataFrame with the daily returns data
 
 ```python
 from pathlib import Path
-from dafin import ReturnsData, Performance
+
+from dafin import Performance, ReturnsData
+
 
 def main():
     """
     Fetch returns data for assets, risk-free assets, and benchmark. Then compute and print the performance summary.
-
-    Doctest:
-    >>> isinstance(path, Path)
-    True
     """
 
     # Define assets, risk-free assets, and benchmark tickers
@@ -79,11 +77,11 @@ def main():
     assets_benchmark = ["SPY"]
 
     # Define date range
-    date_start = "2020-01-01"
-    date_end = "2022-12-31"
+    date_start = "2015-01-01"
+    date_end = "2019-12-31"
 
     # Define path for saving results
-    path = Path('experiments')
+    path = Path("experiments")
 
     # Fetch returns data for the defined assets
     returns = ReturnsData(assets=assets).get_returns(
@@ -98,7 +96,9 @@ def main():
 
     # Calculate performance metrics
     performance = Performance(
-        returns_assets=returns, returns_rf=returns_rf, returns_benchmark=returns_benchmark
+        returns_assets=returns,
+        returns_rf=returns_rf,
+        returns_benchmark=returns_benchmark,
     )
 
     # Save performance metrics and associated figures to the specified path
@@ -108,6 +108,7 @@ def main():
 
     # Print the performance summary
     print(performance.summary)
+
 
 if __name__ == "__main__":
     main()
