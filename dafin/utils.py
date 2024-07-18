@@ -1,6 +1,4 @@
 import datetime
-import time
-from pathlib import Path
 from typing import Tuple, Union
 
 import numpy as np
@@ -8,7 +6,6 @@ import pandas as pd
 import scipy as sp
 
 DEFAULT_DATE_FMT = "%Y-%m-%d"  # ISO 8601
-DEFAULT_CACHE_DIR = Path.home() / Path(".cache") / "dafin"  # ~/.cache/dafin by default
 DEFAULT_DAYS_PER_YEAR = 252  # 252 trading days per year
 
 
