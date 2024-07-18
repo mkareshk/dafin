@@ -1,14 +1,28 @@
 import datetime
 import hashlib
-import pickle
-from functools import reduce
-from pathlib import Path
 from typing import List, Optional, Union
 
 import pandas as pd
 import yfinance as yf
+from pyrate_limiter import Duration, Limiter, RequestRate
+from requests import Session
+from requests_cache import CacheMixin, SQLiteCache
+from requests_ratelimiter import LimiterMixin, MemoryQueueBucket
 
-from .utils import DEFAULT_CACHE_DIR, normalize_date, price_to_return
+
+class CachedLimiterSession(CacheMixin, LimiterMixin, Session):
+    pass
+
+
+SESSION = CachedLimiterSession(
+    limiter=Limiter(
+        RequestRate(200, Duration.SECOND * 5)
+    ),  # max 2 requests per 5 seconds
+    bucket_class=MemoryQueueBucket,
+    backend=SQLiteCache("yfinance.cache"),
+)
+
+from .utils import normalize_date, price_to_return
 
 
 class ReturnsData:
@@ -17,16 +31,14 @@ class ReturnsData:
         self,
         assets: Union[List[str], str],
         col_price: str = "Adj Close",
-        path_cache: Path = DEFAULT_CACHE_DIR,
     ) -> None:
         """
-        Initializes the Data class with assets, column for price, and the path for cache.
+        Initializes the Data class with assets returns.
         It retrieves the prices and calculates the returns upon initialization.
 
         Parameters:
             assets (Union[List[str], str]): A list of asset symbols or a single asset symbol as a string.
             col_price (str, optional): The name of the column for price data. Defaults to "Adj Close".
-            path_cache (Path, optional): The path where cache files are stored. Defaults to DEFAULT_CACHE_DIR.
 
         Example:
             Assuming that `price_to_return` and `_get_price_df` methods and DEFAULT_CACHE_DIR are defined elsewhere,
@@ -39,15 +51,11 @@ class ReturnsData:
         self.assets = [assets] if isinstance(assets, str) else assets
 
         self.col_price = col_price
-        self.path_prices = path_cache / "prices"
 
-        # Creating a hash using the assets and column price to ensure data integrity or for caching purposes
+        # Creating a hash using the assets and column price to ensure data integrity
         footprint = ".".join(self.assets + [self.col_price])
         hash_object = hashlib.md5(footprint.encode("utf-8"))
         self._hash = int.from_bytes(hash_object.digest(), "big")
-
-        # Create the cache directory if it does not exist
-        self.path_prices.mkdir(parents=True, exist_ok=True)
 
         # Retrieve the prices data
         self.prices = self._get_price_df()
@@ -95,58 +103,22 @@ class ReturnsData:
         The method first tries to load the price data from a file. If the file doesn't exist,
         it downloads the data using yfinance and then stores it for future use.
 
-        Raises:
-        ValueError: If the data is unavailable or if the aggregated price data is empty.
-
         Returns:
         pd.DataFrame: Aggregated price data of all assets.
-
-        Usage example:
-        Assuming `self.assets`, `self.path_prices`, and `self.col_price` are defined and
-        the method is within a class with these attributes, simply call:
-        >>> price_df = self._get_price_df()
         """
 
-        prices_list = []
+        all_price_df = yf.download(self.assets, session=SESSION)
+        price_df = all_price_df[self.col_price]
 
-        for asset in self.assets:
-            # Construct the file path where the asset's price data should be stored
-            path_asset = self.path_prices / Path(f"{asset}.pkl")
+        if isinstance(price_df, pd.Series):
+            price_df = price_df.to_frame()
 
-            # If data already exists at the path, load it
-            if path_asset.is_file():
-                with open(path_asset, "rb") as fin:
-                    price_df = pickle.load(fin)
-            # If data does not exist, download it using yfinance and save it to the path
-            else:
-                price_df = yf.download(asset)
-                with open(path_asset, "wb") as fout:
-                    pickle.dump(price_df, fout)
-
-            # If price_df is not empty, process and add it to prices_list
-            if not price_df.empty:
-                price_df = price_df[self.col_price].to_frame()
-                price_df.rename(columns={self.col_price: asset}, inplace=True)
-                prices_list.append(price_df)
-            else:
-                raise ValueError(f"The price data of {asset} is empty.")
-
-        # Aggregate all price data DataFrames in prices_list into a single DataFrame
-        merge_func = lambda df1, df2: pd.merge(df1, df2, on="Date", how="inner")
-        aggregated_price_df = reduce(merge_func, prices_list)
-
-        # Raise an error if the aggregated data is empty
-        if aggregated_price_df.empty:
-            raise ValueError(
-                "Error in data collection, aggregated price data is empty."
-            )
-
-        return aggregated_price_df
+        return price_df
 
     def __str__(self) -> str:
         """
         Returns the string representation of the class instance, providing detailed
-        information on its current state including the assets, cache path, data signature,
+        information on its current state including the assets, data signature,
         prices, and returns.
 
         Returns:
@@ -165,7 +137,6 @@ class ReturnsData:
             f"\t- List of Assets: {self.assets}\n",
             f"\t- Price Column: {self.col_price}\n",
             # Removed redundant 'Prices Path' line to clean up the output
-            f"\t- Cache Path: {self.path_prices}\n",
             f"\t- Data Signature: {self._hash}\n",
             f"\t- Prices:\n{self.prices}\n\n\n",
             f"\t- Returns:\n{self.returns}\n\n\n",

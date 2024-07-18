@@ -18,8 +18,8 @@ def main():
     assets_benchmark = ["SPY"]
 
     # Define date range
-    date_start = "2020-01-01"
-    date_end = "2022-12-31"
+    date_start = "2015-01-01"
+    date_end = "2019-12-31"
 
     # Define path for saving results
     path = Path("experiments")

@@ -22,6 +22,8 @@ setuptools.setup(
         "seaborn",
         "yfinance>=0.2.40",
         "yfinance[nospam]>=0.2.40",
+        "requests_cache",
+        "requests_ratelimiter",
         "scipy",
     ],
     python_requires=">=3.10",
