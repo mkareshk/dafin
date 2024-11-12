@@ -14,10 +14,9 @@ class CachedLimiterSession(CacheMixin, LimiterMixin, Session):
     pass
 
 
+rate_limit = RequestRate(200, Duration.SECOND * 5)
 SESSION = CachedLimiterSession(
-    limiter=Limiter(
-        RequestRate(200, Duration.SECOND * 5)
-    ),  # max 2 requests per 5 seconds
+    limiter=Limiter(rate_limit),
     bucket_class=MemoryQueueBucket,
     backend=SQLiteCache("yfinance.cache"),
 )
@@ -39,12 +38,6 @@ class ReturnsData:
         Parameters:
             assets (Union[List[str], str]): A list of asset symbols or a single asset symbol as a string.
             col_price (str, optional): The name of the column for price data. Defaults to "Adj Close".
-
-        Example:
-            Assuming that `price_to_return` and `_get_price_df` methods and DEFAULT_CACHE_DIR are defined elsewhere,
-            >>> data_instance = Data(['AAPL', 'GOOGL'], col_price="Close")
-            >>> isinstance(data_instance, Data)
-            True
         """
 
         # Convert to list if a single asset is passed
@@ -58,7 +51,10 @@ class ReturnsData:
         self._hash = int.from_bytes(hash_object.digest(), "big")
 
         # Retrieve the prices data
-        self.prices = self._get_price_df()
+        price_df = yf.download(self.assets, session=SESSION)[self.col_price].dropna()
+        self.prices = (
+            price_df.to_frame() if isinstance(price_df, pd.Series) else price_df
+        )
 
         # Calculate the returns from the prices data
         self.returns = price_to_return(self.prices)
@@ -78,12 +74,6 @@ class ReturnsData:
 
         Returns:
             pd.DataFrame: The daily returns data within the specified date range or all available data if no dates are provided.
-
-        Example:
-            Assuming an instance has a `returns` attribute as a DataFrame and
-            `normalize_date` function is defined:
-            >>> instance.get_returns('2022-01-01', '2022-01-10')
-            <DataFrame with the daily returns data between '2022-01-01' and '2022-01-10'>
         """
 
         # If no date is passed, return all available data
@@ -97,24 +87,6 @@ class ReturnsData:
         # Return the daily returns data for the specified date range
         return self.returns.loc[date_start:date_end]
 
-    def _get_price_df(self) -> pd.DataFrame:
-        """
-        Returns the aggregated price data for all assets specified in self.assets.
-        The method first tries to load the price data from a file. If the file doesn't exist,
-        it downloads the data using yfinance and then stores it for future use.
-
-        Returns:
-        pd.DataFrame: Aggregated price data of all assets.
-        """
-
-        all_price_df = yf.download(self.assets, session=SESSION)
-        price_df = all_price_df[self.col_price]
-
-        if isinstance(price_df, pd.Series):
-            price_df = price_df.to_frame()
-
-        return price_df
-
     def __str__(self) -> str:
         """
         Returns the string representation of the class instance, providing detailed
@@ -123,46 +95,26 @@ class ReturnsData:
 
         Returns:
             str: The detailed string representation of the class instance.
-
-        Example:
-            Assuming an instance of the class is already created, the method can be used
-            as follows:
-            >>> str(instance)
-            'Returns Data:\n\t- List of Assets: [...]\n\t- Price Column: ...\n...'
         """
 
         # Creating a list of string segments to be concatenated into the final output
         str_segments = [
             "Returns Data:\n",
-            f"\t- List of Assets: {self.assets}\n",
-            f"\t- Price Column: {self.col_price}\n",
-            # Removed redundant 'Prices Path' line to clean up the output
-            f"\t- Data Signature: {self._hash}\n",
-            f"\t- Prices:\n{self.prices}\n\n\n",
-            f"\t- Returns:\n{self.returns}\n\n\n",
+            f"- List of Assets: {self.assets}\n",
+            f"- Price Column: {self.col_price}\n",
+            f"- Data Signature: {self._hash}\n",
+            f"- Prices:\n{self.prices}\n\n\n",
+            f"- Returns:\n{self.returns}\n\n\n",
         ]
 
         # Joining all string segments into the final output string
         return "".join(str_segments)
 
+    def __hash__(self) -> int:
+        """
+        Returns the hash of the class instance based on the `_hash` attribute.
 
-def __hash__(self) -> int:
-    """
-    Computes and returns the hash of the class instance based on the `_hash` attribute.
-
-    Returns:
-        int: The hash value of the class instance.
-
-    Doctest:
-        Assuming the '_hash' attribute is properly set, you can get the hash as follows:
-        >>> class Example:
-        ...     def __init__(self, hash_value):
-        ...         self._hash = hash_value
-        ...     __hash__ = __hash__
-        ...
-        >>> e = Example(1234)
-        >>> hash(e)
-        1234
-    """
-    # Returning the precomputed hash value stored in the `_hash` attribute
-    return self._hash
+        Returns:
+            int: The hash value of the class instance.
+        """
+        return self._hash
