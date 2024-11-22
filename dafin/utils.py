@@ -264,6 +264,7 @@ def normalize_date(
         date_dt = str_to_date(date)
     elif isinstance(date, datetime.datetime):
         date_str = date_to_str(date)
+        date_dt = date.replace(tzinfo=pytz.UTC)
     elif isinstance(date, datetime.date):
         date_dt = datetime.datetime.combine(date, datetime.time.min)
         date_str = date_to_str(date)

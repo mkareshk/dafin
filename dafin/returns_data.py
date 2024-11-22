@@ -3,6 +3,7 @@ import hashlib
 from typing import List, Optional, Union
 
 import pandas as pd
+import pytz
 import yfinance as yf
 from pyrate_limiter import Duration, Limiter, RequestRate
 from requests import Session
@@ -85,6 +86,9 @@ class ReturnsData:
         date_end, _ = normalize_date(date_end)
 
         # Return the daily returns data for the specified date range
+        timezone = self.returns.index.tz
+        date_start = date_start.replace(tzinfo=timezone)
+        date_end = date_end.replace(tzinfo=timezone)
         return self.returns.loc[date_start:date_end]
 
     def __str__(self) -> str:
