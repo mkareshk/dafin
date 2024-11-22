@@ -28,6 +28,13 @@ setuptools.setup(
     ],
     python_requires=">=3.10",
     extras_require={
-        "dev": ["pre-commit", "pytest", "pytest-runner", "pytest-cov", "pylint"],
+        "dev": [
+            "pre-commit",
+            "pytest",
+            "pytest-runner",
+            "pytest-cov",
+            "pylint",
+            "twine",
+        ],
     },
 )
