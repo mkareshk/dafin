@@ -20,14 +20,21 @@ setuptools.setup(
     ],
     install_requires=[
         "seaborn",
-        "yfinance>=0.2.40",
-        "yfinance[nospam]>=0.2.40",
+        "yfinance>=0.2.49",
+        "yfinance[nospam]>=0.2.49",
         "requests_cache",
         "requests_ratelimiter",
         "scipy",
     ],
     python_requires=">=3.10",
     extras_require={
-        "dev": ["pre-commit", "pytest", "pytest-runner", "pytest-cov"],
+        "dev": [
+            "pre-commit",
+            "pytest",
+            "pytest-runner",
+            "pytest-cov",
+            "pylint",
+            "twine",
+        ],
     },
 )

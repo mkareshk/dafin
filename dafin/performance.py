@@ -15,7 +15,7 @@ class Performance:
         returns_benchmark: pd.DataFrame = None,
     ) -> None:
         """
-        Initializes the Performance object with provided asset, risk-free, and benchmark returns.
+        Initializes the Performance object with provided assets, risk-free, and benchmark returns.
 
         Parameters:
         - returns_assets: A DataFrame containing the returns of multiple assets.
@@ -24,15 +24,6 @@ class Performance:
 
         Raises:
         - ValueError: If returns_assets DataFrame is empty.
-
-        Examples:
-        >>> returns_assets = pd.DataFrame({"Asset1": [0.01, 0.02, -0.01], "Asset2": [-0.01, 0.03, 0.02]})
-        >>> performance = Performance(returns_assets)
-        >>> performance.returns_assets
-           Asset1  Asset2
-        0    0.01   -0.01
-        1    0.02    0.03
-        2   -0.01    0.02
         """
 
         if returns_assets.empty:
@@ -66,143 +57,56 @@ class Performance:
         # Initialize plotting object
         self.plot = Plot()
 
-    @property
-    def returns_cum(self) -> pd.DataFrame:
-        """Returns the cumulative returns of the assets.
+        # Calculate cumulative returns
+        self.returns_cum = calc_returns_cum(self.returns_assets)
 
-        Returns:
-            pd.DataFrame: Cumulative returns.
-        """
+        # Calculate total returns
+        self.returns_total = calc_returns_total(self.returns_assets)
 
-        return calc_returns_cum(self.returns_assets)
+        # Calculate covariance and correlation matrices
+        self.cov = self.returns_assets.cov()
+        self.corr = self.returns_assets.corr()
 
-    @property
-    def returns_total(self) -> pd.DataFrame:
-        """Returns the total returns of the assets.
+        # Calculate annualzied returns
+        self.returns_assets_annualized = calc_annualized_returns(self.returns_assets)
 
-        Returns:
-            pd.DataFrame: Total returns.
-        """
+        # Calculate annualized standard deviation
+        self.sd_assets_annualized = calc_annualized_sd(self.returns_assets)
 
-        return calc_returns_total(self.returns_assets)
+        # Calculate annualized returns of the risk-free asset
+        self.returns_rf_annualized = calc_annualized_returns(self.returns_rf)
 
-    @property
-    def cov(self) -> pd.DataFrame:
-        """Returns the covariance matrix of the assets.
+        # Calculate annualized returns of the benchmark
+        self.returns_benchmark_annualized = calc_annualized_returns(
+            self.returns_benchmark
+        )
 
-        Returns:
-            pd.DataFrame: Covariance matrix.
-        """
+        # Calculate the mean and standard deviation of the assets
+        self.mean_sd = pd.DataFrame(index=self.assets, columns=["mean", "sd"])
+        self.mean_sd["mean"] = self.returns_assets_annualized
+        self.mean_sd["sd"] = self.sd_assets_annualized
 
-        return self.returns_assets.cov()
+        # Calculate the beta of the assets
+        self.beta = calculate_beta(self.returns_assets, self.returns_benchmark)
 
-    @property
-    def corr(self) -> pd.DataFrame:
-        """Returns the correlation matrix of the assets.
-
-        Returns:
-            pd.DataFrame: Correlation matrix.
-        """
-
-        return self.returns_assets.corr()
-
-    @property
-    def returns_assets_annualized(self) -> pd.DataFrame:
-        """Returns the annualized returns of the assets.
-
-        Returns:
-            pd.DataFrame: Annualized returns.
-        """
-
-        return calc_annualized_returns(self.returns_assets)
-
-    @property
-    def sd_assets_annualized(self) -> pd.DataFrame:
-        """Returns the annualized standard deviation of the assets.
-
-        Returns:
-            pd.DataFrame: Annualized standard deviation.
-        """
-
-        return calc_annualized_sd(self.returns_assets)
-
-    @property
-    def returns_rf_annualized(self) -> pd.DataFrame:
-        """Returns the annualized returns of the risk-free asset.
-
-        Returns:
-            pd.DataFrame: Annualized returns of the risk-free asset.
-        """
-
-        return calc_annualized_returns(self.returns_rf).iloc[0]
-
-    @property
-    def returns_benchmark_annualized(self) -> pd.DataFrame:
-        """Returns the annualized returns of the benchmark.
-
-        Returns:
-            pd.DataFrame: Annualized returns of the benchmark.
-        """
-
-        return calc_annualized_returns(self.returns_benchmark).iloc[0]
-
-    @property
-    def mean_sd(self) -> pd.DataFrame:
-        """Returns the mean and standard deviation of the assets.
-
-        Returns:
-            pd.DataFrame: Mean and standard deviation of the assets.
-        """
-
-        mean_sd = pd.DataFrame(index=self.assets, columns=["mean", "sd"])
-        mean_sd["mean"] = self.returns_assets_annualized
-        mean_sd["sd"] = self.sd_assets_annualized
-        return mean_sd
-
-    @property
-    def beta(self) -> pd.DataFrame:
-        """Returns the beta of the assets.
-
-        Returns:
-            pd.DataFrame: Beta of the assets.
-        """
-
-        return calculate_beta(self.returns_assets, self.returns_benchmark)
-
-    @property
-    def alpha(self) -> pd.DataFrame:
-        """Returns the alpha of the assets.
-
-        Returns:
-            pd.DataFrame: Alpha of the assets.
-        """
-
-        return calculate_alpha(
+        # Calculate the alpha of the assets
+        self.alpha = calculate_alpha(
             self.returns_assets,
             self.returns_rf,
             self.returns_benchmark,
         )
 
-    @property
-    def regression(self) -> pd.DataFrame:
-        """Returns the regression of the assets.
+        # Calculate the regression of the assets
+        self.regression = regression(self.returns_assets, self.returns_benchmark)
 
-        Returns:
-            pd.DataFrame: Regression of the assets.
-        """
-
-        return regression(self.returns_assets, self.returns_benchmark)
-
-    @property
-    def sharpe_ratio(self) -> pd.DataFrame:
-        return calculate_sharpe_ratio(
+        # Calculate the sharpe ratio of the assets
+        self.sharpe_ratio = calculate_sharpe_ratio(
             self.returns_assets,
             self.returns_rf,
         )
 
-    @property
-    def treynor_ratio(self) -> pd.DataFrame:
-        return calculate_treynor_ratio(
+        # Calculate the treynor ratio of the assets
+        self.treynor_ratio = calculate_treynor_ratio(
             self.returns_assets,
             self.returns_rf,
             self.returns_benchmark,
@@ -218,14 +122,14 @@ class Performance:
         return (
             "Performance:\n"
             # assets
-            + f"\t- List of Assets: {self.assets}\n"
-            + f"\t- Risk-Free Asset: {self.asset_rf}\n"
-            + f"\t- Benchmark Asset: {self.asset_benchmark}\n"
+            + f"- List of Assets: {self.assets}\n"
+            + f"- Risk-Free Asset: {self.asset_rf}\n"
+            + f"- Benchmark Asset: {self.asset_benchmark}\n"
             # date
-            + f"\t- Start Date: {self.date_start_str}\n"
-            + f"\t- End Date: {self.date_end_str}\n"
+            + f"- Start Date: {self.date_start_str}\n"
+            + f"- End Date: {self.date_end_str}\n"
             # performance
-            + f"\t - Performance Summary:\n{self.summary}\n\n\n"
+            + f"- Performance Summary:\n{self.summary}\n\n\n"
         )
 
     @property
@@ -252,12 +156,16 @@ class Performance:
         return s
 
     def plot_returns(
-        self, alpha: float = 1, legend: bool = True, yscale: str = "linear"
+        self,
+        alpha: float = 1,
+        legend: bool = True,
+        yscale: str = "linear",
+        title="Returns",
     ):
 
-        fig, ax = self.plot.plot_trend(
+        return self.plot.plot_trend(
             df=self.returns_assets,
-            title="",
+            title=title,
             xlabel="Date",
             ylabel="Expected Annual Returns",
             alpha=alpha,
@@ -265,78 +173,73 @@ class Performance:
             legend=legend,
             yscale=yscale,
         )
-        return fig, ax
 
-    def plot_cum_returns(self):
-        fig, ax = self.plot.plot_trend(
+    def plot_cum_returns(self, title="Cumulative Returns"):
+        return self.plot.plot_trend(
             df=self.returns_cum,
-            title="",
+            title=title,
             xlabel="Date",
             marker=None,
             ylabel="Cumulative Returns",
             yscale="linear",
         )
-        return fig, ax
 
-    def plot_total_returns(self, legend: bool = False):
-        fig, ax = self.plot.plot_bar(
+    def plot_total_returns(self, title="Total Returns", legend: bool = False):
+        return self.plot.plot_bar(
             df=self.returns_total,
-            title="",
+            title=title,
             xlabel="Assets",
             ylabel=f"Total Returns ({self.date_start_str} to {self.date_end_str})",
             legend=legend,
         )
-        return fig, ax
 
-    def plot_dist_returns(self, yscale: str = "symlog"):
-        fig, ax = self.plot.plot_box(
+    def plot_dist_returns(
+        self, title: str = "Distribution of Returns", yscale: str = "symlog"
+    ):
+        return self.plot.plot_box(
             df=self.returns_assets,
-            title=f"",
+            title=title,
             xlabel="Assets",
             ylabel=f"Daily Returns",
             figsize=(15, 8),
             yscale=yscale,
         )
-        return fig, ax
 
-    def plot_corr(self):
-        fig, ax = self.plot.plot_heatmap(
+    def plot_corr(self, title: str = "Correlation Matrix"):
+        return self.plot.plot_heatmap(
             df=self.returns_assets,
             relation_type="corr",
-            title="",
+            title=title,
             annotate=True,
         )
-        return fig, ax
 
-    def plot_cov(self):
-        fig, ax = self.plot.plot_heatmap(
+    def plot_cov(self, title: str = "Covariance Matrix"):
+        return self.plot.plot_heatmap(
             df=self.returns_assets,
             relation_type="cov",
-            title="",
+            title=title,
             annotate=True,
         )
-        return fig, ax
 
     def plot_mean_sd(
         self,
         colour="tab:blue",
         fig=None,
         ax=None,
+        title: str = "Mean vs. Standard Deviation",
+        xlabel: str = "Standard Deviation",
+        ylabel: str = "Expected Returns",
     ):
 
-        xlabel = "Standard Deviation"
-        ylabel = "Expected Returns"
-
-        fig, ax = self.plot.plot_scatter(
+        return self.plot.plot_scatter(
             df=self.mean_sd,
-            title="",
+            title=title,
             xlabel=xlabel,
             ylabel=ylabel,
             colour=colour,
             fig=fig,
             ax=ax,
         )
-        return fig, ax
 
     def save_figs(self, path: Path, prefix: str = "experiment"):
 
@@ -377,5 +280,6 @@ class Performance:
         self.mean_sd.to_csv(path / Path(f"{prefix}__mean_sd.csv"))
 
     def save_results(self, path: Path, prefix: str = "experiment"):
-        self.save_data(prefix=prefix, path=path)
-        self.save_figs(prefix=prefix, path=path)
+
+        self.save_data(path=path, prefix=prefix)
+        self.save_figs(path=path, prefix=prefix)
