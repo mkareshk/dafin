@@ -30,7 +30,7 @@ class ReturnsData:
     def __init__(
         self,
         assets: Union[List[str], str],
-        col_price: str = "Adj Close",
+        col_price: str = "Close",
     ) -> None:
         """
         Initializes the Data class with assets returns.
@@ -38,7 +38,7 @@ class ReturnsData:
 
         Parameters:
             assets (Union[List[str], str]): A list of asset symbols or a single asset symbol as a string.
-            col_price (str, optional): The name of the column for price data. Defaults to "Adj Close".
+            col_price (str, optional): The name of the column for price data. Defaults to "Close".
         """
 
         # Convert to list if a single asset is passed
