@@ -11,7 +11,7 @@ date_start_list = ["2015-01-01", "2015-01-01"]
 date_end_list = ["2019-12-31", "2015-09-30"]
 
 # cols
-col_price_list = ["Open", "Close", "Adj Close"]
+col_price_list = ["Open", "Close"]
 
 
 # params

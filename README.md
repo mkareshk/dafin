@@ -34,7 +34,7 @@ print(isinstance(data_instance, ReturnsData))  # This should print: True
 ##### Parameters:
 
 - `assets`: A list of asset symbols or a single asset symbol as a string. This parameter is required.
-- `col_price`: The name of the column for price data. This parameter is optional and defaults to "Adj Close".
+- `col_price`: The name of the column for price data. This parameter is optional and defaults to "Close".
 - `path_cache`: The path where cache files are stored. This parameter is optional and defaults to DEFAULT_CACHE_DIR.
 
 #### 2. Retrieving Daily Returns Data
